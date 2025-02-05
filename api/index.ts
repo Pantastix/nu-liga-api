@@ -10,6 +10,7 @@ export const config = {
 const app = new Hono().basePath("/api");
 app.use("*", cors());
 
+
 app.get("/spielplan", async (c) => {
   const res = await fetch(
     "https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=Region+S%C3%BCdwestsachsen+24%2F25&group=367458"
@@ -103,26 +104,47 @@ app.get("/spielplan", async (c) => {
     return r;
   });
 
-  const jsonResult = JSON.stringify(tableRows);
-  return c.json(jsonResult);
+  // const jsonResult = JSON.stringify(tableRows);
+  return c.json(tableRows);
 });
 
 app.get("/tabelle", async (c) => {
   const res = await fetch(
-    "https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=Region+S%C3%BCdwestsachsen+24%2F25&group=367458"
+      "https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=Region+S%C3%BCdwestsachsen+24%2F25&group=367458"
   );
   const htmlString = await res.text();
   const $ = cheerio.load(htmlString);
-  const table = $("table.result-set").eq(0);
+  const table = $("table.result-set").eq(0).children();
 
-  const tableRows = table
-    .children()
-    .eq(0)
-    .children()
-    .map((i, el) => {
-      if (i > 0) return el;
-    });
-  return c.text(tableRows.toString() || "No element found");
+  let tableRows = table
+      .children()
+      .map((i, el) => {
+        if (i > 0) {
+          let position = $(el).children().eq(1).text().trim().replace(/\s+/g, " ");
+          let team = $(el).children().eq(2).text().trim().replace(/\s+/g, " ");
+          let matches = $(el).children().eq(3).text().trim().replace(/\s+/g, " ");
+          let win = $(el).children().eq(4).text().trim().replace(/\s+/g, " ");
+          let draw = $(el).children().eq(5).text().trim().replace(/\s+/g, " ");
+          let lose = $(el).children().eq(6).text().trim().replace(/\s+/g, " ");
+          let goals = $(el).children().eq(7).text().trim().replace(/\s+/g, " ");
+          let difference = $(el).children().eq(8).text().trim().replace(/\s+/g, " ");
+          let points = $(el).children().eq(9).text().trim().replace(/\s+/g, " ");
+
+          return{
+            team,
+            position,
+            matches,
+            win,
+            draw,
+            lose,
+            goals,
+            difference,
+            points
+          }
+        }
+      }).toArray()
+
+  return c.json(tableRows);
 });
 
 export default handle(app);

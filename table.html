@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handball Tabelle</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+<h1>Handball Tabelle</h1>
+<table>
+  <thead>
+  <tr>
+    <th>Rang</th>
+    <th>Mannschaft</th>
+    <th>Begegnungen</th>
+    <th>Siege</th>
+    <th>Unentschieden</th>
+    <th>Niederlagen</th>
+    <th>Tore</th>
+    <th>Tordifferenz</th>
+    <th>Punkte</th>
+  </tr>
+  </thead>
+  <tbody id="tabelle-body">
+  <!-- Daten werden hier eingefügt -->
+  </tbody>
+</table>
+
+<script>
+  async function fetchTable() {
+    try {
+      const response = await fetch('https://nu-liga-api.vercel.app/api/tabelle');
+      const text = await response.text();  // API-Antwort als Text ausgeben
+      console.log(text);  // Debug: Was gibt die API zurück?
+
+      // Versuche, den Text in JSON umzuwandeln
+      const data = JSON.parse(text);
+      console.log(data);
+
+      if (!Array.isArray(data)) {
+        throw new Error("API response is not an array.");
+      }
+
+      data.forEach(row => {
+        // Hier Daten in die Tabelle einfügen
+      });
+
+    } catch (error) {
+      console.error("Fehler beim Laden der Tabelle:", error);
+    }
+  }
+
+
+  fetchTable();
+</script>
+</body>
+</html>

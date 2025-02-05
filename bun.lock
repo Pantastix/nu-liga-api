@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "hvs-spielplan-api",
+      "name": "nu-liga-api",
       "dependencies": {
         "cheerio": "^1.0.0",
         "hono": "^4.6.20",

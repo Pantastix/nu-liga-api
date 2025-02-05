@@ -1,5 +1,5 @@
 {
-  "name": "hvs-spielplan-api",
+  "name": "nu-liga-api",
   "scripts": {
     "start": "vercel dev",
     "deploy": "vercel"

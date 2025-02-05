@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spielplan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h2>Spielplan</h2>
+<table id="spielplanTable">
+    <thead>
+    <tr>
+        <th>Datum</th>
+        <th>Uhrzeit</th>
+        <th>Heimmannschaft</th>
+        <th>Gastmannschaft</th>
+        <th>Halle</th>
+        <th>Spielstand</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+<script>
+    fetch("https://nu-liga-api.vercel.app/api/spielplan")
+        .then((res) => res.json())
+        .then((data) => {
+            try {
+                if (typeof data === "string") {
+                    data = JSON.parse(data);
+                }
+                if (!Array.isArray(data)) {
+                    throw new Error("API response is not an array");
+                }
+                const tableBody = document.querySelector("#spielplanTable tbody");
+                data.forEach((spiel) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                <td>${spiel.date || "-"}</td>
+                <td>${spiel.time || "-"}</td>
+                <td>${spiel.heimmannschaft}</td>
+                <td>${spiel.gastmannschaft}</td>
+                <td><a href="https://hvs-handball.liga.nu${spiel.halle.href}" target="_blank">${spiel.halle.name}</a></td>
+                <td>${spiel.spielstand || "-"}</td>
+              `;
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Fehler beim Verarbeiten des Spielplans:", error);
+            }
+        })
+        .catch((error) => console.error("Fehler beim Laden des Spielplans:", error));
+</script>
+</body>
+</html>
