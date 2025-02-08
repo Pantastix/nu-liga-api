@@ -44,7 +44,7 @@
     "group": "367458"
   });
 
-  fetch(`http://localhost:3000/api/tabel?${params.toString()}`)
+  fetch(`http://localhost:3000/api/table?${params.toString()}`)
           .then(response => {
             if (!response.ok) {
               throw new Error("Netzwerkantwort war nicht ok");

@@ -11,10 +11,37 @@ const app = new Hono().basePath("/api");
 app.use("*", cors());
 
 
-app.get("/spielplan", async (c) => {
-    const res = await fetch(
-        "https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=Region+S%C3%BCdwestsachsen+24%2F25&group=367458"
-    );
+app.get("/gameplan", async (c) => {
+    const urlParams = c.req.query();  // Query-Parameter aus der URL lesen
+    let championship = urlParams["championship"];
+    let group = urlParams["group"];
+    let teamtable = urlParams["teamtable"];
+    let pageState = urlParams["pageState"] ? urlParams["pageState"] : "vorrunde";
+
+    if (championship == null) {
+        return c.json({
+                error: "Bad Request: No championship provided"
+            }, 400
+        );
+    }
+    if (group == null) {
+        return c.json({
+                error: "Bad Request: No group provided"
+            }, 400
+        );
+    }
+    if (teamtable == null) {
+        return c.json({
+                error: "Bad Request: No teamtable provided"
+            }, 400
+        );
+    }
+    championship = championship.replace("/", "%2F").replace(" ", "+");
+
+    const url = `https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/teamPortrait?teamtable=${teamtable}&pageState=${pageState}&championship=${championship}&group=${group}`
+
+    const res = await fetch(url);
+
     const htmlString = await res.text();
     const $ = cheerio.load(htmlString);
     const table = $("table.result-set").eq(1).children();
@@ -109,7 +136,7 @@ app.get("/spielplan", async (c) => {
 });
 
 
-app.get("/tabel", async (c) => {
+app.get("/table", async (c) => {
     const urlParams = c.req.query();  // Query-Parameter aus der URL lesen
     let championship = urlParams["championship"];
     let group = urlParams["group"];

@@ -46,7 +46,13 @@
     <tbody></tbody>
 </table>
 <script>
-    fetch("https://nu-liga-api.vercel.app/api/spielplan")
+    let params = new URLSearchParams({
+        "championship": "Region Südwestsachsen 24/25",
+        "group": "367458",
+        "teamtable": "1981521"
+    });
+
+    fetch(`http://localhost:3000/api/gameplan?${params.toString()}`)
         .then((res) => res.json())
         .then((data) => {
             try {
