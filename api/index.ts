@@ -3,6 +3,34 @@ import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
 
+interface Meeting {
+    meetingID: string;
+    teamHome: string;
+    teamGuest: string;
+    scheduled: string;
+    matchesHome: number;
+    matchesGuest: number;
+    halfTimeScoreHome: number;
+    halfTimeScoreGuest: number;
+    live: boolean;
+    homeImgUrl: string;  // URL des Heim-Logos
+    guestImgUrl: string; // URL des Gast-Logos
+}
+
+interface ParsedGame {
+    date: string;
+    home_team: string;
+    away_team: string;
+    start_time: string;
+    current_minute: string | null;
+    current_result: string;
+    halftime_result: string;
+    match_link: string;
+    live: boolean;
+    home_team_logo: string;  // Heim-Logo URL
+    away_team_logo: string;  // Gast-Logo URL
+}
+
 export const config = {
     runtime: "edge",
 };
@@ -194,7 +222,61 @@ app.get("/table", async (c) => {
     return c.json(tableRows);
 });
 
+app.get("/live", async (c) => {
+    const urlParams = c.req.query();  // Query-Parameter aus der URL lesen
+    let group = urlParams["group"];
+    if (group == null) {
+        return c.json({
+                error: "Bad Request: No group provided"
+            }, 400
+        );
+    }
+
+    let url = `https://hbde-live.liga.nu/nuScoreLive/#/groups/${group}`
+
+    const res = await fetch(url);
+    const htmlString = await res.text();
+    const $ = cheerio.load(htmlString);
+
+    let games: any[] = [];
+    let currentDate = "";
+
+    $(".game-content").children().each((i, el) => {
+        if ($(el).hasClass("dategroup")) {
+            currentDate = $(el).text().trim();
+        } else if ($(el).is("single-game")) {
+            const homeTeam = $(el).find(".team-home").text().trim().replace(/\s+/g, " ");
+            const awayTeam = $(el).find(".team-away").text().trim().replace(/\s+/g, " ");
+            const startTime = $(el).find(".match-location").text().trim();
+            const currentMinute = $(el).find(".timer").text().trim() || null;
+            const currentResult = $(el).find(".match-result span").text().trim() || null;
+            const halftimeResult = $(el).find(".match-result-intermediate").text().trim() || null;
+
+            // Link zum Spiel extrahieren
+            const matchLink = url + "#" + homeTeam.replace(/\s+/g, "-") + "-vs-" + awayTeam.replace(/\s+/g, "-");
+
+            games.push({
+                date: currentDate,
+                home_team: homeTeam,
+                away_team: awayTeam,
+                start_time: startTime,
+                current_minute: currentMinute,
+                current_result: currentResult,
+                halftime_result: halftimeResult,
+                match_link: matchLink
+            });
+        }
+    });
+
+    return c.json(games);
+});
+
+
 export default handle(app);
 
 //Region+Südwestsachsen+24%2F25
 //Region%2BS%C3%BCdwestsachsen%2B24%2F25
+
+// 1739184210
+// 1739185928
+// 1739186205

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live-Spiel Übersicht</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      width: 80%;
+      margin: 20px auto;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .game-list {
+      list-style: none;
+      padding: 0;
+    }
+    .game-item {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      margin: 10px 0;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .game-item img {
+      width: 40px;
+      height: 40px;
+      margin-right: 15px;
+    }
+    .game-details {
+      flex: 1;
+    }
+    .game-time {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    .game-score {
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Live-Spiel Übersicht</h1>
+  <ul class="game-list" id="game-list">
+    <!-- Spiele werden hier angezeigt -->
+  </ul>
+</div>
+
+<script>
+  async function fetchLiveGames() {
+    try {
+      let params = new URLSearchParams({
+        "group": "367458"
+      });
+
+      const response = await fetch(`http://localhost:3000/api/live-json?${params.toString()}`);
+      const data = await response.json();
+
+      if (Array.isArray(data) && data.length > 0) {
+        const gameList = document.getElementById('game-list');
+        gameList.innerHTML = ''; // Liste leeren, bevor neue Spiele hinzugefügt werden
+
+        data.forEach(game => {
+          const gameItem = document.createElement('li');
+          gameItem.classList.add('game-item');
+
+          const homeLogo = game.home_team_logo;
+          const awayLogo = game.away_team_logo;
+          const homeTeam = game.home_team;
+          const awayTeam = game.away_team;
+          const matchLink = game.match_link;
+          const matchTime = game.start_time;
+          const currentResult = game.current_result;
+
+          gameItem.innerHTML = `
+                            <div class="game-details">
+                                <span class="game-time">${matchTime}</span><br>
+                                <strong>${homeTeam}</strong> vs <strong>${awayTeam}</strong><br>
+                                <span class="game-score">${currentResult}</span><br>
+                                <a href="${matchLink}" target="_blank">Zur Spielseite</a>
+                            </div>
+                            <div class="game-logos">
+                                <img src="${homeLogo}" alt="${homeTeam} Logo">
+                                <img src="${awayLogo}" alt="${awayTeam} Logo">
+                            </div>
+                        `;
+
+          gameList.appendChild(gameItem);
+        });
+      } else {
+        alert('Keine Spiele gefunden!');
+      }
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Daten:', error);
+    }
+  }
+
+  // Initiale Daten abfragen, wenn die Seite geladen wird
+  window.onload = fetchLiveGames;
+</script>
+</body>
+</html>
