@@ -3,6 +3,7 @@ import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
 
+
 interface Meeting {
     meetingID: string;
     teamHome: string;
@@ -18,6 +19,7 @@ interface Meeting {
 }
 
 interface ParsedGame {
+    meetingID: string;
     date: string;
     home_team: string;
     away_team: string;
@@ -30,6 +32,7 @@ interface ParsedGame {
     home_team_logo: string;  // Heim-Logo URL
     away_team_logo: string;  // Gast-Logo URL
 }
+
 
 export const config = {
     runtime: "edge",
@@ -222,61 +225,171 @@ app.get("/table", async (c) => {
     return c.json(tableRows);
 });
 
-app.get("/live", async (c) => {
-    const urlParams = c.req.query();  // Query-Parameter aus der URL lesen
-    let group = urlParams["group"];
-    if (group == null) {
-        return c.json({
-                error: "Bad Request: No group provided"
-            }, 400
-        );
+// API-Endpunkt
+app.get("/score/all", async (c) => {
+    const urlParams = c.req.query();
+    const group = urlParams["group"];
+
+    if (!group) {
+        return c.json({ error: "Bad Request: No group provided" }, 400);
     }
 
-    let url = `https://hbde-live.liga.nu/nuScoreLive/#/groups/${group}`
+    // Berechne den aktuellen Unix-Timestamp in Sekunden
+    let timestamp = Math.floor(Date.now() / 1000);
 
-    const res = await fetch(url);
-    const htmlString = await res.text();
-    const $ = cheerio.load(htmlString);
+    // Runden des Timestamps auf das nächste Intervall, das auf 00 oder 30 endet
+    const remainder = timestamp % 60;
+    if (remainder < 30) {
+        timestamp -= remainder;  // Runden auf die 00-Sekunde
+    } else {
+        timestamp += (60 - remainder);  // Runden auf die 30-Sekunde
+    }
 
-    let games: any[] = [];
-    let currentDate = "";
+    const apiUrl = `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/meetings/${group}/time/${timestamp}`;
 
-    $(".game-content").children().each((i, el) => {
-        if ($(el).hasClass("dategroup")) {
-            currentDate = $(el).text().trim();
-        } else if ($(el).is("single-game")) {
-            const homeTeam = $(el).find(".team-home").text().trim().replace(/\s+/g, " ");
-            const awayTeam = $(el).find(".team-away").text().trim().replace(/\s+/g, " ");
-            const startTime = $(el).find(".match-location").text().trim();
-            const currentMinute = $(el).find(".timer").text().trim() || null;
-            const currentResult = $(el).find(".match-result span").text().trim() || null;
-            const halftimeResult = $(el).find(".match-result-intermediate").text().trim() || null;
-
-            // Link zum Spiel extrahieren
-            const matchLink = url + "#" + homeTeam.replace(/\s+/g, "-") + "-vs-" + awayTeam.replace(/\s+/g, "-");
-
-            games.push({
-                date: currentDate,
-                home_team: homeTeam,
-                away_team: awayTeam,
-                start_time: startTime,
-                current_minute: currentMinute,
-                current_result: currentResult,
-                halftime_result: halftimeResult,
-                match_link: matchLink
-            });
+    try {
+        const res = await fetch(apiUrl);
+        if (!res.ok) {
+            throw new Error("Fehler beim Abrufen der API-Daten");
         }
-    });
 
-    return c.json(games);
+        const jsonData = await res.json();
+        const games = parseMeetingsData(jsonData.meetings, group);
+
+        return c.json(games);
+
+    } catch (error: unknown) {  // Fehler als unknown typisieren
+        if (error instanceof Error) {  // Auf den richtigen Typen prüfen
+            console.error("API Fehler:", error.message);
+            return c.json({ error: error.message }, 500);
+        } else {
+            console.error("Unbekannter Fehler:", error);
+            return c.json({ error: "Unbekannter Fehler" }, 500);
+        }
+    }
 });
 
+// API-Endpunkt für das neueste Ergebnis eines bestimmten Vereins
+app.get("/score/recent", async (c) => {
+    const urlParams = c.req.query();
+    let team = urlParams["team"];
+    const group = urlParams["group"];
+
+    if (!team) {
+        return c.json({ error: "Bad Request: No team provided" }, 400);
+    }else{
+        team = decodeURIComponent(team.replace(/\+/g, ' '));
+    }
+
+    if (!group) {
+        return c.json({ error: "Bad Request: No group provided" }, 400);
+    }
+
+    console.log("Team:", team);
+    console.log("Gruppe:", group);
+
+    // Berechne den aktuellen Unix-Timestamp in Sekunden
+    let timestamp = Math.floor(Date.now() / 1000);
+
+    // Runden des Timestamps auf das nächste Intervall, das auf 00 oder 30 endet
+    const remainder = timestamp % 60;
+    if (remainder < 30) {
+        timestamp -= remainder;  // Runden auf die 00-Sekunde
+    } else {
+        timestamp += (60 - remainder);  // Runden auf die 30-Sekunde
+    }
+
+    const apiUrl = `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/meetings/${group}/time/${timestamp}`;
+
+    try {
+        const res = await fetch(apiUrl);
+        if (!res.ok) {
+            throw new Error("Fehler beim Abrufen der API-Daten");
+        }
+
+        const jsonData = await res.json();
+        const games = parseMeetingsData(jsonData.meetings, group);
+
+        // Filtern und das neueste Spiel auswählen
+        const latestGame = getLatestGame(games, team);
+
+        if (!latestGame) {
+            return c.json({ error: `Kein Spiel gefunden für das Team: ${team}` }, 404);
+        }
+
+        return c.json(latestGame);
+
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            console.error("API Fehler:", error.message);
+            return c.json({ error: error.message }, 500);
+        } else {
+            console.error("Unbekannter Fehler:", error);
+            return c.json({ error: "Unbekannter Fehler" }, 500);
+        }
+    }
+});
+
+// Hilfsfunktion, die das neueste Spiel für das Team zurückgibt
+function getLatestGame(meetings: ParsedGame[], team: string): ParsedGame | null {
+    const now = new Date();
+    const today = now.toISOString().split("T")[0]; // Format: 'YYYY-MM-DD'
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayDate = yesterday.toISOString().split("T")[0]; // Format: 'YYYY-MM-DD'
+
+    // Filtere alle relevanten Spiele für das Team
+    const relevantGames = meetings.filter(meeting =>
+        (meeting.home_team === team || meeting.away_team === team)
+    );
+
+    // Suche nach Spielen vom heutigen oder gestrigen Tag
+    const recentGames = relevantGames.filter(game => {
+        const gameDate = game.date.split('T')[0]; // Extrahiere nur das Datum
+        return gameDate === today || gameDate === yesterdayDate;
+    });
+
+    if (recentGames.length > 0) {
+        // Wenn es Spiele vom heutigen oder gestrigen Tag gibt, gib das neueste zurück
+        return recentGames[0];
+    }
+
+    // Suche nach zukünftigen Spielen
+    const futureGames = relevantGames.filter(game => new Date(game.date) > now);
+
+    if (futureGames.length > 0) {
+        // Wenn ein zukünftiges Spiel gefunden wird, gib das erste zurück
+        return futureGames.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+    }
+
+    // Wenn keine zukünftigen Spiele gefunden werden, gib einfach das erste verfügbare Spiel zurück
+    if (relevantGames.length > 0) {
+        return relevantGames[0]; // Gib das erste verfügbare Spiel zurück
+    }
+
+    // Falls kein Spiel gefunden wird, gib null zurück
+    return null;
+}
+
+
+
+function parseMeetingsData(meetings: Meeting[], group: string): ParsedGame[] {
+    return meetings.map((meeting: Meeting) => {
+        return {
+            meetingID: meeting.meetingID,
+            date: new Date(meeting.scheduled).toLocaleDateString('de-DE'),
+            home_team: meeting.teamHome,
+            away_team: meeting.teamGuest,
+            start_time: new Date(meeting.scheduled).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+            current_minute: meeting.live ? "LIVE" : null,
+            current_result: `${meeting.matchesHome} - ${meeting.matchesGuest}`,
+            halftime_result: `${meeting.halfTimeScoreHome} - ${meeting.halfTimeScoreGuest}`,
+            match_link: `https://hbde-live.liga.nu/nuScoreLive/#/groups/${group}/meetings/${meeting.meetingID}`,
+            live: meeting.live,
+            home_team_logo: `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/images/${meeting.homeImgUrl}`, // Heim-Logo URL
+            away_team_logo: `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/images/${meeting.guestImgUrl}` // Gast-Logo URL
+        };
+    });
+}
 
 export default handle(app);
-
-//Region+Südwestsachsen+24%2F25
-//Region%2BS%C3%BCdwestsachsen%2B24%2F25
-
-// 1739184210
-// 1739185928
-// 1739186205

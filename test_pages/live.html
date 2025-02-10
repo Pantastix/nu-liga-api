@@ -66,7 +66,7 @@
         "group": "367458"
       });
 
-      const response = await fetch(`http://localhost:3000/api/live-json?${params.toString()}`);
+      const response = await fetch(`http://localhost:3000/api/live-test?${params.toString()}`);
       const data = await response.json();
 
       if (Array.isArray(data) && data.length > 0) {

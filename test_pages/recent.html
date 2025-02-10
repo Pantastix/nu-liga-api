@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Spielinfo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .game-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .game-card h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .game-card p {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .game-card .result {
+            font-weight: bold;
+            color: green;
+        }
+
+        .game-card .half-time {
+            font-weight: normal;
+            color: gray;
+        }
+
+        .game-card .match-link {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .error {
+            color: red;
+            font-size: 18px;
+        }
+
+        .loading {
+            color: #007bff;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+<h1>Spielinformation für das Team</h1>
+<div id="loading" class="loading">Lade die Spielinformationen...</div>
+<div id="game-info" class="game-card" style="display:none;">
+    <!-- Spielinformationen werden hier angezeigt -->
+</div>
+<div id="error-message" class="error" style="display:none;"></div>
+
+<script>
+    async function fetchGameData() {
+        let team = 'Sachsen 90 Werdau'; // Hier den Teamnamen angeben
+        const group = '367458'; // Hier die Gruppen-ID angeben
+
+        let params = new URLSearchParams({
+            'team': team,
+            'group': group
+        });
+
+        console.log(params.toString());
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/recent?${params.toString()}`);
+            const data = await response.json();
+
+            // Wenn ein Fehler zurückgegeben wird
+            if (data.error) {
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("error-message").textContent = data.error;
+                document.getElementById("error-message").style.display = "block";
+                return;
+            }
+
+            // Ansonsten die Spielinformation anzeigen
+            const game = data;
+
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("game-info").style.display = "block";
+
+            document.getElementById("game-info").innerHTML = `
+                    <h2>${game.home_team} vs ${game.away_team}</h2>
+                    <p><strong>Datum:</strong> ${game.date}</p>
+                    <p><strong>Startzeit:</strong> ${game.start_time}</p>
+                    <p><strong>Ergebnis:</strong> <span class="result">${game.current_result}</span></p>
+                    <p><strong>Halbzeit:</strong> <span class="half-time">${game.halftime_result}</span></p>
+                    <p><a href="${game.match_link}" class="match-link" target="_blank">Spiel ansehen</a></p>
+                `;
+        } catch (error) {
+            console.error("Fehler beim Abrufen der Daten:", error);
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("error-message").textContent = "Es gab einen Fehler beim Laden der Spielinformationen.";
+            document.getElementById("error-message").style.display = "block";
+        }
+    }
+
+    // Seite initial laden
+    fetchGameData();
+</script>
+</body>
+</html>

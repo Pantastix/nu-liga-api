@@ -6,9 +6,13 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0",
-    "hono": "^4.6.20"
+    "hono": "^4.6.20",
+    "playwright": "^1.50.1",
+    "puppeteer": "^24.2.0",
+    "puppeteer-core": "^24.2.0"
   },
   "devDependencies": {
+    "@types/puppeteer": "^5.4.7",
     "vercel": "^40.1.0"
   }
 }
