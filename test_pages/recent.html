@@ -84,7 +84,7 @@
         console.log(params.toString());
 
         try {
-            const response = await fetch(`http://localhost:3000/api/recent?${params.toString()}`);
+            const response = await fetch(`http://localhost:3000/api/score/recent?${params.toString()}`);
             const data = await response.json();
 
             // Wenn ein Fehler zurückgegeben wird
