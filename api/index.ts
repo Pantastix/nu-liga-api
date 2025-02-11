@@ -24,7 +24,6 @@ interface ParsedGame {
     home_team: string;
     away_team: string;
     start_time: string;
-    current_minute: string | null;
     current_result: string;
     halftime_result: string;
     match_link: string;
@@ -329,6 +328,59 @@ app.get("/score/recent", async (c) => {
         }
     }
 });
+
+app.get("/score/recent/test", async (c) => {
+    const urlParams = c.req.query();
+    let team = urlParams["team"];
+    const group = urlParams["group"];
+
+    if (!team) {
+        return c.json({ error: "Bad Request: No team provided" }, 400);
+    }else{
+        team = decodeURIComponent(team.replace(/\+/g, ' '));
+    }
+
+    if (!group) {
+        return c.json({ error: "Bad Request: No group provided" }, 400);
+    }
+
+    // Berechne den aktuellen Unix-Timestamp in Sekunden
+    let timestamp = Math.floor(Date.now() / 1000);
+
+    // Runden des Timestamps auf das nächste Intervall, das auf 00 oder 30 endet
+    const remainder = timestamp % 60;
+    if (remainder < 30) {
+        timestamp -= remainder;  // Runden auf die 00-Sekunde
+    } else {
+        timestamp += (60 - remainder);  // Runden auf die 30-Sekunde
+    }
+
+    //aktuelles datum + 30 sekunden
+    let test_date = new Date();
+    console.log("Aktuelles Datum:", test_date);
+    test_date.setSeconds(test_date.getSeconds() + 30);
+    console.log("Testdatum:", test_date);
+
+    // let test_date = new Date();
+    // test_date.setSeconds(test_date.getSeconds() + 10);
+
+    let response = {
+        meetingID: "7699729",
+        date: test_date.toLocaleDateString('de-DE'),
+        home_team: "Sachsen 90 Werdau",
+        away_team: "HC Pleißental",
+        start_time: test_date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
+        current_result: `22 - 21`,
+        halftime_result: `15 - 14`,
+        match_link: `https://hbde-live.liga.nu/nuScoreLive/#/groups/367458/meetings/7699729`,
+        live: true,
+        home_team_logo: `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/images/0a88d5bc-d619-4857-b57d-0217360fd151`, // Heim-Logo URL
+        away_team_logo: `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/images/23177fa0-88c9-4b01-8b7a-b8e2dcdcf1b5` // Gast-Logo URL
+    };
+
+    return c.json(response);
+});
+
 
 // Hilfsfunktion, die das neueste Spiel für das Team zurückgibt
 function getLatestGame(meetings: ParsedGame[], team: string): ParsedGame | null {
