@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GamePreview</title>
+  <style>
+    .match-widget {
+      border-radius: 12px;
+      padding: 4px;
+      border: 1px solid #ccc;
+      width: 100%;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+    .loading_live {
+      font-size: 20px;
+      font-weight: bold;
+      color: #555;
+      text-align: center;
+      margin-top: 25px;
+      margin-bottom: 25px;
+    }
+    .match-widget.upcoming {
+      background-color: #77CB83;
+    }
+    .match-widget.live {
+      background-color: #328745;
+    }
+    #content-bottom {
+      clear: both;
+    }
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+      }
+      50% {
+        box-shadow: 0 0 15px rgba(255, 0, 0, 1);
+      }
+      100% {
+        box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+      }
+    }
+    .live-icon {
+      font-size: 16px; /* Adjust the size as needed */
+      vertical-align: top;
+    }
+  </style>
+</head>
+<body>
+  <div class="simulation-info" id="simulation-info" style="display: none;"></div>
+
+  <div id="widget" class="match-widget">
+    <div class="loading_live" id="loading">Loading...</div>
+    <div id="content-top" style="display: none;">
+      <div id="live-box" style="border-radius: 8px; background-color: #E2001D; padding: 4px; float: left; color: rgba(255, 255, 255, 0.95); font-size: 20px; font-weight: bold; display: none; animation: pulse 1.5s infinite;">
+        <span class="live-icon" style="margin-right: 4px;">⚪</span>LIVE
+      </div>
+      <div id="date-time" style="border-radius: 8px; background-color: #E2001D; padding: 4px; float: right; color: rgba(255, 255, 255, 0.95); font-size: 20px; font-weight: bold;">
+        <!-- Date and time will be inserted here by JavaScript -->
+      </div>
+    </div>
+    <div id="content-bottom" style="display: none; clear: both;">unten</div>
+  </div>
+
+  <script>
+    const SIMULATE_TIME = false;
+    const TIME_OFFSET_DAYS = 0;
+    const TIME_OFFSET_HOURS = 0;
+    const TIME_OFFSET_MINUTES = 0;
+    const TIME_OFFSET_SECONDS = 0;
+
+    let matchData = {};
+    let gamePlanData = [];
+
+    function parseGermanDate(dateStr, timeStr) {
+      const [day, month, year] = dateStr.split('.').map(Number);
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return new Date(year, month - 1, day, hours, minutes);
+    }
+
+    function getCurrentTime() {
+      const now = new Date();
+
+      if (SIMULATE_TIME) {
+        now.setDate(now.getDate() + TIME_OFFSET_DAYS);
+        now.setHours(now.getHours() + TIME_OFFSET_HOURS);
+        now.setMinutes(now.getMinutes() + TIME_OFFSET_MINUTES);
+        now.setSeconds(now.getSeconds() + TIME_OFFSET_SECONDS);
+
+        const simInfo = document.getElementById("simulation-info");
+        simInfo.style.display = "block";
+        simInfo.textContent = `Simulation aktiv: ${TIME_OFFSET_DAYS} Tage, ${TIME_OFFSET_HOURS} Stunden, ${TIME_OFFSET_MINUTES} Minuten, ${TIME_OFFSET_SECONDS} Sekunden verschoben`;
+      }
+
+      return now;
+    }
+
+    async function fetchMatchData() {
+      try {
+
+        const params = new URLSearchParams({
+          "championship": "Region Südwestsachsen 24/25",
+          "group": "367458",
+          "teamtable": "1981521",
+          "team": "Sachsen 90 Werdau"
+        });
+        const response = await fetch(`http://localhost:3000/api/next-game/test?${params.toString()}`);
+
+        if (!response.ok) {
+          throw new Error('Fehler beim Abrufen der Daten');
+        }
+
+        matchData = await response.json();
+
+        updateWidget();
+      } catch (error) {
+        console.error('Fehler:', error);
+      }
+    }
+
+    function updateWidget() {
+      document.getElementById("loading").style.display = "none";
+
+      const widget = document.getElementById("widget");
+      if (matchData.live || matchData.spielstand !== "") {
+        widget.classList.add("live");
+        widget.classList.remove("upcoming");
+      } else {
+        widget.classList.add("upcoming");
+        widget.classList.remove("live");
+      }
+
+      // Conditionally display the live box
+      const liveBoxElement = document.getElementById("live-box");
+      if (matchData.live) {
+        liveBoxElement.style.display = "block";
+      } else {
+        liveBoxElement.style.display = "none";
+      }
+
+      // Set the date and time in the new div
+      const dateTimeElement = document.getElementById("date-time");
+      dateTimeElement.textContent = `${matchData.date} ${matchData.time} Uhr`;
+
+      // Display the content divs
+      document.getElementById("content-top").style.display = "block";
+      document.getElementById("content-bottom").style.display = "block";
+
+      document.getElementById("widget").onclick = function() {
+        window.location.href = matchData.match_link;
+      };
+    }
+
+    function startCountdown(matchDate) {
+      const timerElement = document.getElementById("match-timer");
+
+      function updateCountdown() {
+        const now = getCurrentTime();
+        const timeDiff = matchDate - now;
+
+        if (timeDiff <= 0) {
+          location.reload();
+          return;
+        }
+
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+        timerElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+        setTimeout(updateCountdown, 1000);
+      }
+
+      updateCountdown();
+    }
+
+    function showResult() {
+      const timerElement = document.getElementById("match-timer");
+      timerElement.classList.add("result");
+
+      if (matchData.live) {
+        timerElement.textContent = matchData.current_result;
+      } else {
+        timerElement.textContent = matchData.current_result;
+      }
+    }
+
+    fetchMatchData();
+  </script>
+</body>
+</html>

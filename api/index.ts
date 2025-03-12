@@ -387,12 +387,21 @@ app.get("/next-game", async (c) => {
                 const jsonData = await res.json();
                 const games = parseMeetingsData(jsonData.meetings, group);
 
+
                 const relevantGames = games.filter(meeting =>
                     (meeting.home_team === team || meeting.away_team === team)
                 );
 
+                relevantGames[0].date = "12.03.2025"; //TODO: remove this line
+
+
                 //check for game with same date as closestGame
-                const liveGame = relevantGames.find(game => game.date === closestGame.date);
+                // const liveGame = relevantGames.find(game => game.date === closestGame.date);
+
+                const liveGame = relevantGames.find(game => {
+                    return formatDate(game.date, undefined).toLocaleDateString('de-DE') === formatDate(closestGame.date, undefined).toLocaleDateString('de-DE');
+                });
+
 
                 //add live game to response under "liveticker" key
                 if (liveGame) {
@@ -416,10 +425,23 @@ app.get("/next-game", async (c) => {
                     return c.json({error: "Unbekannter Fehler"}, 500);
                 }
             }
+        }else{
+            closestGame.live = false;
         }
-    }
+    } else {
+        //check if there is a game in the future (get the first one)
+        let futureGame = tableRows.find((game) => {
+            return new Date(game.date) > today;
+        });
 
-    console.log(live_error);
+        //if no future game, get the last game
+        if(!futureGame) {
+            futureGame = tableRows[tableRows.length - 1];
+        }
+
+        closestGame = futureGame;
+        closestGame.live = false;
+    }
 
     //hier alle werte aus closest game hinzufügen
     let response = {};
@@ -435,67 +457,79 @@ app.get("/next-game", async (c) => {
         }
     }
 
-    console.log(response);
+    return c.json(response);
+});
+
+app.get("/next-game/test", async (c) => {
+    const urlParams = c.req.query();
+    let team = urlParams["team"];
+    const group = urlParams["group"];
+    let championship = urlParams["championship"];
+    let teamtable = urlParams["teamtable"];
+    let pageState = urlParams["pageState"] ? urlParams["pageState"] : "vorrunde";
+
+    if (!team) {
+        return c.json({error: "Bad Request: No team provided"}, 400);
+    } else {
+        team = decodeURIComponent(team.replace(/\+/g, ' '));
+    }
+
+    if (!group) {
+        return c.json({error: "Bad Request: No group provided"}, 400);
+    }
+    if (championship == null) {
+        return c.json({
+                error: "Bad Request: No championship provided"
+            }, 400
+        );
+    }
+    if (teamtable == null) {
+        return c.json({
+                error: "Bad Request: No teamtable provided"
+            }, 400
+        );
+    }
+
+
+    //set day of 2nd game to today
+    let today = new Date();
+    let todayStr = today.toLocaleDateString('de-DE', {year: 'numeric', month: '2-digit', day: '2-digit'});
+    let timeNowStr = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
+
+    let liveAttributes = {
+        live: true,
+        current_result: "22 - 21",
+        halftime_result: "15 - 14",
+        match_link: "https://hbde-live.liga.nu/nuScoreLive/#/groups/367458/meetings/7699809",
+        home_team_logo: "https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/images/0a88d5bc-d619-4857-b57d-0217360fd151",
+        away_team_logo: "https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/images/99b5c66d-9b16-47bb-8cf8-bbdeb79c5a7b"
+    }
+
+    let closestGame = {
+        day: "Sa.",
+        date: todayStr,
+        time: timeNowStr,
+        halle: {
+            "nr": "32508",
+            "name": "SH Werdau",
+            "href": "/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/courtInfo?federation=HVS&roundTyp=0&championship=Region+S%C3%BCdwestsachsen+24%2F25&location=22634"
+        },
+        nr: "1",
+        heimmannschaft: "Sachsen 90 Werdau",
+        gastmannschaft: "HC Pleißental",
+        spielstand: "",
+    }
+
+
+    //hier alle werte aus closest game hinzufügen
+    let response = {
+        ...closestGame,
+        ...liveAttributes
+    }
 
 
     return c.json(response);
 });
-
-// app.get("/next-game/test", async (c) => {
-//     const urlParams = c.req.query();
-//     let team = urlParams["team"];
-//     const group = urlParams["group"];
-//     let championship = urlParams["championship"];
-//     let teamtable = urlParams["teamtable"];
-//     let pageState = urlParams["pageState"] ? urlParams["pageState"] : "vorrunde";
-//
-//     if (!team) {
-//         return c.json({error: "Bad Request: No team provided"}, 400);
-//     } else {
-//         team = decodeURIComponent(team.replace(/\+/g, ' '));
-//     }
-//
-//     if (!group) {
-//         return c.json({error: "Bad Request: No group provided"}, 400);
-//     }
-//     if (championship == null) {
-//         return c.json({
-//                 error: "Bad Request: No championship provided"
-//             }, 400
-//         );
-//     }
-//     if (teamtable == null) {
-//         return c.json({
-//                 error: "Bad Request: No teamtable provided"
-//             }, 400
-//         );
-//     }
-//
-//
-//     //set day of 2nd game to today
-//     let today = new Date();
-//     let todayStr = today.toLocaleDateString('de-DE', {year: 'numeric', month: '2-digit', day: '2-digit'});
-//     let timeNowStr = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
-//
-//     let liveAttributes = {
-//         live: true,
-//         current_result: "22 - 21",
-//         halftime_result: liveGame.halftime_result,
-//         match_link: liveGame.match_link,
-//         home_team_logo: liveGame.home_team_logo,
-//         away_team_logo: liveGame.away_team_logo
-//     }
-//
-//
-//     //hier alle werte aus closest game hinzufügen
-//     let response = {
-//         ...closestGame,
-//         ...liveAttributes
-//     }
-//
-//
-//     return c.json(response);
-// });
 
 function getClosestGame(tableRows: any[]) {
     for (let i = 0; i < 2; i++) {
@@ -521,7 +555,7 @@ function isGameLive(game: any) {
     let now = new Date();
     //add 10min
     now.setMinutes(now.getMinutes() + 10);
-    let gameDate = parseDate(game.date, game.time);
+    let gameDate = formatDate(game.date, game.time);
 
     if (isOnDate(game.date, now)) {
         if (isOnTime(game.time, now)) {
@@ -547,7 +581,7 @@ function isOnTime(timeStr: string, checkTime: Date): boolean {
 }
 
 function isOnDate(dateStr: string, checkDate: Date): boolean {
-    const parsedDate = parseDate(dateStr, undefined);
+    const parsedDate = formatDate(dateStr, undefined);
 
     // Vergleiche Tag, Monat und Jahr
     return (
@@ -558,7 +592,7 @@ function isOnDate(dateStr: string, checkDate: Date): boolean {
 }
 
 
-function parseDate(dateStr: string, timeStr: string | undefined): Date {
+function formatDate(dateStr: string, timeStr: string | undefined): Date {
     const [day, month, year] = dateStr.split('.').map(Number);
 
     if (timeStr === undefined) {
@@ -723,7 +757,11 @@ function parseMeetingsData(meetings: Meeting[], group: string): ParsedGame[] {
 
 function calculateTimestamp() {
     // Berechne den aktuellen Unix-Timestamp in Sekunden
-    let timestamp = Math.floor(Date.now() / 1000);
+    // let timestamp = Math.floor(Date.now() / 1000);
+
+    //date of 19.02.2025 16:15Uhr
+    let date = new Date(2025, 1, 19, 16, 15, 0);
+    let timestamp = Math.floor(date.getTime() / 1000);
 
     // Runden des Timestamps auf das nächste Intervall, das auf 00 oder 30 endet
     const remainder = timestamp % 60;
@@ -732,6 +770,8 @@ function calculateTimestamp() {
     } else {
         timestamp += (60 - remainder);  // Runden auf die 30-Sekunde
     }
+
+    return timestamp;
 }
 
 export default handle(app);
