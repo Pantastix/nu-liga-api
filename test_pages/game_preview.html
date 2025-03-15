@@ -1,68 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>GamePreview</title>
-  <style>
-    .match-widget {
-      border-radius: 12px;
-      padding: 4px;
-      border: 1px solid #ccc;
-      width: 100%;
-      margin: 0 auto;
-      box-sizing: border-box;
-    }
-    .loading_live {
-      font-size: 20px;
-      font-weight: bold;
-      color: #555;
-      text-align: center;
-      margin-top: 25px;
-      margin-bottom: 25px;
-    }
-    .match-widget.upcoming {
-      background-color: #77CB83;
-    }
-    .match-widget.live {
-      background-color: #328745;
-    }
-    #content-bottom {
-      clear: both;
-    }
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
-      }
-      50% {
-        box-shadow: 0 0 15px rgba(255, 0, 0, 1);
-      }
-      100% {
-        box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
-      }
-    }
-    .live-icon {
-      font-size: 16px; /* Adjust the size as needed */
-      vertical-align: top;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>GamePreview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=event"/>
+    <style>
+        .match-widget {
+            border-radius: 12px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            width: 100%;
+            margin: 0 auto;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading_live {
+            font-size: 20px;
+            font-weight: bold;
+            color: #555;
+            text-align: center;
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        .match-widget.upcoming {
+            background-color: #77CB83;
+        }
+
+        .match-widget.live {
+            background-color: #328745;
+        }
+
+        #content-bottom {
+            clear: both;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(255, 0, 0, 1);
+            }
+            100% {
+                box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+            }
+        }
+
+        .live-icon {
+            font-size: 16px; /* Adjust the size as needed */
+            vertical-align: top;
+        }
+
+        #content-countdown {
+            display: none;
+            clear: both;
+            font-size: 36px; /* Larger font size */
+            font-weight: bold; /* Bold text */
+            color: white; /* White text */
+            text-align: center; /* Centered text */
+            margin-top: 20px; /* Add some margin at the top */
+            font-family: 'Bebas Neue', sans-serif; /* Apply Bebas Neue font */
+            letter-spacing: 2px;
+        }
+
+        #date-time {
+            border-radius: 8px;
+            background-color: #E2001D;
+            padding: 4px;
+            float: right;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 20px;
+            font-weight: bold;
+            font-family: 'Bebas Neue', sans-serif; /* Apply Bebas Neue font */
+            letter-spacing: 2px;
+            display: flex;
+        }
+
+        #live-box {
+            border-radius: 8px;
+            background-color: #E2001D;
+            padding: 4px;
+            float: left;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 20px;
+            font-weight: bold;
+            display: none;
+            animation: pulse 1.5s infinite;
+            font-family: 'Bebas Neue', sans-serif; /* Apply Bebas Neue font */
+            letter-spacing: 2px;
+        }
+
+        #content-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 36px;
+        }
+
+        .team img {
+            width: 75px;
+            height: 75px;
+        }
+
+        .team-name-large {
+            display: none;
+        }
+
+        .team-name-small {
+            display: block;
+        }
+
+        .team div {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            color: white;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        #result {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 6vw;
+            color: white;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        @media (min-width: 600px) {
+            #content-bottom {
+                flex-direction: row;
+            }
+
+            .team {
+                flex-direction: row;
+            }
+
+            .team div {
+                margin-top: 0;
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+
+            .team-name-large {
+                display: block;
+                font-size: 100px;
+            }
+
+            #away-name-large {
+                font-size: 3vw;
+            }
+
+            #home-name {
+                font-size: 3vw;
+            }
+
+            .team-name-small {
+                display: none;
+            }
+        }
+
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined', sans-serif;
+            font-size: 25px;
+            color: white;
+            margin: 0 0 0 0;
+            clear: both;
+        }
+
+        hr#announcement-divider {
+          display: block;
+          clear: both;
+          width: 100%;
+          border: none;
+          border-top: 2px solid #fff;
+          margin: 8px 8px 0 8px;
+          box-sizing: border-box;
+        }
+    </style>
 </head>
 <body>
-  <div class="simulation-info" id="simulation-info" style="display: none;"></div>
+<div class="simulation-info" id="simulation-info" style="display: none;"></div>
 
-  <div id="widget" class="match-widget">
+<div id="widget" class="match-widget">
     <div class="loading_live" id="loading">Loading...</div>
     <div id="content-top" style="display: none;">
-      <div id="live-box" style="border-radius: 8px; background-color: #E2001D; padding: 4px; float: left; color: rgba(255, 255, 255, 0.95); font-size: 20px; font-weight: bold; display: none; animation: pulse 1.5s infinite;">
-        <span class="live-icon" style="margin-right: 4px;">⚪</span>LIVE
-      </div>
-      <div id="date-time" style="border-radius: 8px; background-color: #E2001D; padding: 4px; float: right; color: rgba(255, 255, 255, 0.95); font-size: 20px; font-weight: bold;">
-        <!-- Date and time will be inserted here by JavaScript -->
-      </div>
-    </div>
-    <div id="content-bottom" style="display: none; clear: both;">unten</div>
-  </div>
+        <div id="live-box">
+            <span class="live-icon" style="margin-right: 4px;">⚪</span>LIVE
+        </div>
 
-  <script>
+        <div id="date-time">
+            <span class="material-symbols-outlined">event</span>
+            <span id='date-time-text'></span>
+        </div>
+    </div>
+    <!--    <div id='content-anouncement'>-->
+    <!--        Spielankündigung | {Datum} {Uhrzeit} Uhr-->
+    <!--        <hr style='border: none; border-top: 2px solid #fff; margin-top: 8px;' />-->
+    <!--    </div>-->
+    <hr id="announcement-divider" style="border: none; border-top: 2px solid #fff; margin: 20px 8px 0 8px; width: 95%;" />
+    <div id="content-countdown" style="display: none; clear: both;"></div>
+    <div id="content-bottom" style="display: none; clear: both;">
+        <div class="team home">
+            <img id="home-logo" src="" alt="Home Team Logo">
+            <div id="home-name"></div>
+        </div>
+        <div id="result">VS</div>
+        <div class="team away">
+            <div id="away-name-large" class="team-name-large"></div>
+            <img id="away-logo" src="" alt="Away Team Logo">
+            <div id="away-name-small" class="team-name-small"></div>
+        </div>
+    </div>
+</div>
+
+<script>
     const SIMULATE_TIME = false;
     const TIME_OFFSET_DAYS = 0;
     const TIME_OFFSET_HOURS = 0;
@@ -73,121 +235,137 @@
     let gamePlanData = [];
 
     function parseGermanDate(dateStr, timeStr) {
-      const [day, month, year] = dateStr.split('.').map(Number);
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      return new Date(year, month - 1, day, hours, minutes);
+        const [day, month, year] = dateStr.split('.').map(Number);
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return new Date(year, month - 1, day, hours, minutes);
     }
 
     function getCurrentTime() {
-      const now = new Date();
+        const now = new Date();
 
-      if (SIMULATE_TIME) {
-        now.setDate(now.getDate() + TIME_OFFSET_DAYS);
-        now.setHours(now.getHours() + TIME_OFFSET_HOURS);
-        now.setMinutes(now.getMinutes() + TIME_OFFSET_MINUTES);
-        now.setSeconds(now.getSeconds() + TIME_OFFSET_SECONDS);
+        if (SIMULATE_TIME) {
+            now.setDate(now.getDate() + TIME_OFFSET_DAYS);
+            now.setHours(now.getHours() + TIME_OFFSET_HOURS);
+            now.setMinutes(now.getMinutes() + TIME_OFFSET_MINUTES);
+            now.setSeconds(now.getSeconds() + TIME_OFFSET_SECONDS);
 
-        const simInfo = document.getElementById("simulation-info");
-        simInfo.style.display = "block";
-        simInfo.textContent = `Simulation aktiv: ${TIME_OFFSET_DAYS} Tage, ${TIME_OFFSET_HOURS} Stunden, ${TIME_OFFSET_MINUTES} Minuten, ${TIME_OFFSET_SECONDS} Sekunden verschoben`;
-      }
+            const simInfo = document.getElementById("simulation-info");
+            simInfo.style.display = "block";
+            simInfo.textContent = `Simulation aktiv: ${TIME_OFFSET_DAYS} Tage, ${TIME_OFFSET_HOURS} Stunden, ${TIME_OFFSET_MINUTES} Minuten, ${TIME_OFFSET_SECONDS} Sekunden verschoben`;
+        }
 
-      return now;
+        return now;
     }
 
     async function fetchMatchData() {
-      try {
+        try {
 
-        const params = new URLSearchParams({
-          "championship": "Region Südwestsachsen 24/25",
-          "group": "367458",
-          "teamtable": "1981521",
-          "team": "Sachsen 90 Werdau"
-        });
-        const response = await fetch(`http://localhost:3000/api/next-game/test?${params.toString()}`);
+            const params = new URLSearchParams({
+                "championship": "Region Südwestsachsen 24/25",
+                "group": "367458",
+                "teamtable": "1981521",
+                "team": "Sachsen 90 Werdau"
+            });
+            const response = await fetch(`http://localhost:3000/api/next-game/test?${params.toString()}`);
 
-        if (!response.ok) {
-          throw new Error('Fehler beim Abrufen der Daten');
+            if (!response.ok) {
+                throw new Error('Fehler beim Abrufen der Daten');
+            }
+
+            matchData = await response.json();
+
+            updateWidget();
+        } catch (error) {
+            console.error('Fehler:', error);
         }
-
-        matchData = await response.json();
-
-        updateWidget();
-      } catch (error) {
-        console.error('Fehler:', error);
-      }
     }
 
     function updateWidget() {
-      document.getElementById("loading").style.display = "none";
+        document.getElementById("loading").style.display = "none";
 
-      const widget = document.getElementById("widget");
-      if (matchData.live || matchData.spielstand !== "") {
-        widget.classList.add("live");
-        widget.classList.remove("upcoming");
-      } else {
-        widget.classList.add("upcoming");
-        widget.classList.remove("live");
-      }
+        const widget = document.getElementById("widget");
+        if (matchData.live || matchData.final_result !== "") {
+            widget.classList.add("live");
+            widget.classList.remove("upcoming");
+        } else {
+            widget.classList.add("upcoming");
+            widget.classList.remove("live");
+        }
 
-      // Conditionally display the live box
-      const liveBoxElement = document.getElementById("live-box");
-      if (matchData.live) {
-        liveBoxElement.style.display = "block";
-      } else {
-        liveBoxElement.style.display = "none";
-      }
+        // Conditionally display the live box
+        const liveBoxElement = document.getElementById("live-box");
+        if (matchData.live) {
+            liveBoxElement.style.display = "block";
+        } else {
+            liveBoxElement.style.display = "none";
+        }
 
-      // Set the date and time in the new div
-      const dateTimeElement = document.getElementById("date-time");
-      dateTimeElement.textContent = `${matchData.date} ${matchData.time} Uhr`;
+        // Set the date and time in the new div
+        const dateTimeElement = document.getElementById("date-time-text");
+        dateTimeElement.textContent = `${matchData.date} ${matchData.time} Uhr`;
 
-      // Display the content divs
-      document.getElementById("content-top").style.display = "block";
-      document.getElementById("content-bottom").style.display = "block";
+        // Display the content divs
+        document.getElementById("content-top").style.display = "block";
+        document.getElementById("content-bottom").style.display = "block";
 
-      document.getElementById("widget").onclick = function() {
-        window.location.href = matchData.match_link;
-      };
+        // Update team logos and names
+        document.getElementById("home-logo").src = matchData.home_team_logo;
+        document.getElementById("home-name").textContent = matchData.home_team;
+        document.getElementById("away-logo").src = matchData.away_team_logo;
+        document.getElementById("away-name-small").textContent = matchData.away_team;
+        document.getElementById("away-name-large").textContent = matchData.away_team;
+
+        // Display the content divs
+        document.getElementById("content-top").style.display = "block";
+        document.getElementById("content-bottom").style.display = "flex";
+
+        if (matchData.live) {
+            document.getElementById("result").textContent = matchData.current_result;
+        } else if (matchData.final_result !== "") {
+            document.getElementById("result").textContent = matchData.final_result;
+        }
+
+        // Check if the game start time is in the past
+        const matchDate = parseGermanDate(matchData.date, matchData.time);
+        const now = getCurrentTime();
+        if (!matchData.live && matchData.final_result === "" && matchDate > now) {
+            startCountdown(matchDate);
+            document.getElementById("content-countdown").style.display = "block";
+        }
+
+        document.getElementById("widget").onclick = function () {
+            window.location.href = matchData.match_link;
+        };
     }
 
     function startCountdown(matchDate) {
-      const timerElement = document.getElementById("match-timer");
+        const countdownElement = document.getElementById("content-countdown");
 
-      function updateCountdown() {
-        const now = getCurrentTime();
-        const timeDiff = matchDate - now;
+        function updateCountdown() {
+            const now = getCurrentTime();
+            const timeDiff = matchDate - now;
 
-        if (timeDiff <= 0) {
-          location.reload();
-          return;
+            if (timeDiff <= 0) {
+                setTimeout(() => {
+                    location.reload();
+                }, 5000); // Reload the page 10 seconds after the countdown ends
+                return;
+            }
+
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+            countdownElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            setTimeout(updateCountdown, 1000);
         }
 
-        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-
-        timerElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-        setTimeout(updateCountdown, 1000);
-      }
-
-      updateCountdown();
-    }
-
-    function showResult() {
-      const timerElement = document.getElementById("match-timer");
-      timerElement.classList.add("result");
-
-      if (matchData.live) {
-        timerElement.textContent = matchData.current_result;
-      } else {
-        timerElement.textContent = matchData.current_result;
-      }
+        updateCountdown();
     }
 
     fetchMatchData();
-  </script>
+</script>
 </body>
 </html>

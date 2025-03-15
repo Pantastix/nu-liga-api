@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
+import { Analytics } from "@vercel/analytics/react"
 
 
 interface Meeting {
@@ -492,12 +493,23 @@ app.get("/next-game/test", async (c) => {
 
 
     //set day of 2nd game to today
-    let today = new Date();
+    // let today = new Date();
+    // //add 30sek
+    // today.setSeconds(today.getSeconds() + 30);
+
+    //custom date
+    let today = new Date(2025, 2, 13, 14, 7, 0);
+
     let todayStr = today.toLocaleDateString('de-DE', {year: 'numeric', month: '2-digit', day: '2-digit'});
     let timeNowStr = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
 
+    let live = false;
+    if (today < new Date()) {
+        live = true;
+    }
+
     let liveAttributes = {
-        live: true,
+        live: live,
         current_result: "22 - 21",
         halftime_result: "15 - 14",
         match_link: "https://hbde-live.liga.nu/nuScoreLive/#/groups/367458/meetings/7699809",
@@ -509,15 +521,15 @@ app.get("/next-game/test", async (c) => {
         day: "Sa.",
         date: todayStr,
         time: timeNowStr,
-        halle: {
-            "nr": "32508",
-            "name": "SH Werdau",
-            "href": "/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/courtInfo?federation=HVS&roundTyp=0&championship=Region+S%C3%BCdwestsachsen+24%2F25&location=22634"
+        arena: {
+            nr: "32508",
+            name: "SH Werdau",
+            href: "/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/courtInfo?federation=HVS&roundTyp=0&championship=Region+S%C3%BCdwestsachsen+24%2F25&location=22634"
         },
         nr: "1",
-        heimmannschaft: "Sachsen 90 Werdau",
-        gastmannschaft: "HC Pleißental",
-        spielstand: "",
+        home_team: "Sachsen 90 Werdau",
+        away_team: "Rotation Borstendorf",
+        final_result: "",
     }
 
 
@@ -558,10 +570,8 @@ function isGameLive(game: any) {
     let gameDate = formatDate(game.date, game.time);
 
     if (isOnDate(game.date, now)) {
-        if (isOnTime(game.time, now)) {
-            return true;
-        }
-        return false;
+        return isOnTime(game.time, now);
+
     } else {
         return false;
     }
@@ -665,18 +675,18 @@ function parseMeetingsFromHtml(htmlString: string) {
                 const halleName = halle.find("span").attr("title");
 
                 return {
-                    day,
-                    date,
-                    time,
-                    halle: {
+                    day: day,
+                    date: date,
+                    time: time,
+                    arena: {
                         nr: hallenNr,
                         name: halleName,
                         href: halleHref,
                     },
-                    nr,
-                    heimmannschaft,
-                    gastmannschaft,
-                    spielstand,
+                    nr: nr,
+                    home_team: heimmannschaft,
+                    away_team: gastmannschaft,
+                    final_result: spielstand,
                 };
             }
         })
