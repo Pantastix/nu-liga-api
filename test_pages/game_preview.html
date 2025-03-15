@@ -34,9 +34,6 @@
             background-color: #328745;
         }
 
-        #content-bottom {
-            clear: both;
-        }
 
         @keyframes pulse {
             0% {
@@ -99,6 +96,12 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px;
+          clear: both;
+        }
+
+        #content-top {
+          margin-bottom: 40px;
+
         }
 
         .team {
@@ -181,9 +184,10 @@
         hr#announcement-divider {
           display: block;
           clear: both;
-          width: 100%;
+          width: 98%;
           border: none;
-          border-top: 2px solid #fff;
+          border-top: 3px solid rgba(255, 255, 255, 0.95);
+          border-radius: 3px;
           margin: 8px 8px 0 8px;
           box-sizing: border-box;
         }
@@ -208,7 +212,7 @@
     <!--        Spielankündigung | {Datum} {Uhrzeit} Uhr-->
     <!--        <hr style='border: none; border-top: 2px solid #fff; margin-top: 8px;' />-->
     <!--    </div>-->
-    <hr id="announcement-divider" style="border: none; border-top: 2px solid #fff; margin: 20px 8px 0 8px; width: 95%;" />
+    <hr id="announcement-divider"/>
     <div id="content-countdown" style="display: none; clear: both;"></div>
     <div id="content-bottom" style="display: none; clear: both;">
         <div class="team home">
@@ -266,7 +270,10 @@
                 "teamtable": "1981521",
                 "team": "Sachsen 90 Werdau"
             });
-            const response = await fetch(`http://localhost:3000/api/next-game/test?${params.toString()}`);
+
+            console.log(`http://localhost:3000/api/next-game/?${params.toString()}`);
+
+            const response = await fetch(`http://localhost:3000/api/next-game/?${params.toString()}`);
 
             if (!response.ok) {
                 throw new Error('Fehler beim Abrufen der Daten');

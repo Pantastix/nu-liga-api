@@ -330,6 +330,8 @@ app.get("/next-game", async (c) => {
     championship = championship.replace("/", "%2F") //.replace(" ", "+");
     championship = championship.split(" ").join("+");
 
+    //TODO: parameter zurück parsen, abgleichen mit händischer request asu postman
+
     const url = `https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/teamPortrait?teamtable=${teamtable}&pageState=${pageState}&championship=${championship}&group=${group}`
 
     const res = await fetch(url);
