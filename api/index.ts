@@ -330,7 +330,6 @@ app.get("/next-game", async (c) => {
     championship = championship.replace("/", "%2F") //.replace(" ", "+");
     championship = championship.split(" ").join("+");
 
-    //TODO: parameter zurück parsen, abgleichen mit händischer request asu postman
 
     const url = `https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/teamPortrait?teamtable=${teamtable}&pageState=${pageState}&championship=${championship}&group=${group}`
 
@@ -365,9 +364,6 @@ app.get("/next-game", async (c) => {
 
     //set day of 2nd game to today
     let today = new Date();
-    let todayStr = today.toLocaleDateString('de-DE');
-    tableRows[16].date = todayStr;
-    tableRows[16].time = "11:00";
 
     let closestGame = getClosestGame(tableRows);
     let liveAttributes = {};
@@ -380,6 +376,7 @@ app.get("/next-game", async (c) => {
             let timestamp = calculateTimestamp();
 
             const apiUrl = `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/meetings/${group}/time/${timestamp}`;
+
 
             try {
                 const res = await fetch(apiUrl);
@@ -394,8 +391,6 @@ app.get("/next-game", async (c) => {
                 const relevantGames = games.filter(meeting =>
                     (meeting.home_team === team || meeting.away_team === team)
                 );
-
-                relevantGames[0].date = "12.03.2025"; //TODO: remove this line
 
 
                 //check for game with same date as closestGame
@@ -416,6 +411,7 @@ app.get("/next-game", async (c) => {
                         home_team_logo: liveGame.home_team_logo,
                         away_team_logo: liveGame.away_team_logo
                     }
+                    console.log(liveAttributes);
                 }
 
             } catch (error: unknown) {
@@ -460,6 +456,8 @@ app.get("/next-game", async (c) => {
         }
     }
 
+
+
     return c.json(response);
 });
 
@@ -500,7 +498,7 @@ app.get("/next-game/test", async (c) => {
     // today.setSeconds(today.getSeconds() + 30);
 
     //custom date
-    let today = new Date(2025, 2, 13, 14, 7, 0);
+    let today = new Date(2025, 2, 15, 16, 17, 0);
 
     let todayStr = today.toLocaleDateString('de-DE', {year: 'numeric', month: '2-digit', day: '2-digit'});
     let timeNowStr = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
@@ -769,11 +767,7 @@ function parseMeetingsData(meetings: Meeting[], group: string): ParsedGame[] {
 
 function calculateTimestamp() {
     // Berechne den aktuellen Unix-Timestamp in Sekunden
-    // let timestamp = Math.floor(Date.now() / 1000);
-
-    //date of 19.02.2025 16:15Uhr
-    let date = new Date(2025, 1, 19, 16, 15, 0);
-    let timestamp = Math.floor(date.getTime() / 1000);
+    let timestamp = Math.floor(Date.now() / 1000);
 
     // Runden des Timestamps auf das nächste Intervall, das auf 00 oder 30 endet
     const remainder = timestamp % 60;
