@@ -343,6 +343,11 @@ app.get("/next-game", async (c) => {
 
     const htmlString = await res.text();
     let tableRows = parseMeetingsFromHtml(htmlString);
+
+    if(tableRows.length == 0){
+        return c.json({error: "No Games found"}, 404);
+    }
+
     //check ever meeting.time for space and split it
     tableRows = tableRows.map((r) => {
         if (r.time.includes(" ")) {
