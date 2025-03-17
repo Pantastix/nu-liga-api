@@ -513,6 +513,7 @@ app.get("/next-game/test", async (c) => {
         live = true;
     }
 
+    //to test the 3rd state of the game, live = false and fill final result
     let liveAttributes = {
         live: live,
         current_result: "22 - 21",
@@ -534,7 +535,7 @@ app.get("/next-game/test", async (c) => {
         nr: "12345",
         home_team: "Sachsen 90 Werdau",
         away_team: "Rotation Borstendorf",
-        final_result: "",
+        final_result: "", //22 - 21
     }
 
 
