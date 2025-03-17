@@ -10,4 +10,8 @@
         <description>Created after removal of "Next Game" from API-Documentation</description>
         <accepts>Next-Game.html</accepts>
     </rule>
+    <rule id="41623019">
+        <description>Created after removal of "About API-Documentation" from API Reference</description>
+        <accepts>starter-topic.html</accepts>
+    </rule>
 </rules>

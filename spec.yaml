@@ -4,6 +4,9 @@ info:
   version: 1.0.0
 servers:
   - url: https://nu-liga-api.vercel.app/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
 paths:
   /gameplan:
     get:
@@ -103,7 +106,7 @@ paths:
 
   /next-game:
     get:
-      summary: Retrieve the next scheduled or live match
+      summary: Retrieve the next scheduled or live match or the last one if no future match is scheduled.
       parameters:
         - name: team
           in: query
@@ -133,7 +136,7 @@ paths:
           description: Defaults to \`vorrunde\`.
       responses:
         '200':
-          description: Successful response
+          description: Either the last game (up to 2 Days) or the next game. If there is no next game, the last game is returned.
           content:
             application/json:
               schema:
@@ -192,17 +195,17 @@ paths:
                     description: Link to the away team logo from Nu Liga
               example:
                 day: "Sa."
-                date: "16.03.2025"
-                time: "19:19"
+                date: "29.01.2025"
+                time: "20:00"
                 arena:
-                  nr: "32508"
-                  name: "SH Werdau"
+                  nr: "12345"
+                  name: "SH Sachsen"
                   href: "/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/courtInfo..."
                 nr: "1"
-                home_team: "Sachsen 90 Werdau"
-                away_team: "Rotation Borstendorf"
+                home_team: "Home Team"
+                away_team: "guest Team"
                 final_result: ""
-                live: false
+                live: true
                 current_result: "22 - 21"
                 halftime_result: "15 - 14"
                 match_link: "https://hbde-live.liga.nu/nuScoreLive/#/groups/..."

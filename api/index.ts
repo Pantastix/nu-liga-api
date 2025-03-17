@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
+import { serveStatic } from '@hono/node-server/serve-static';
 import { Analytics } from "@vercel/analytics/react"
 
 
@@ -40,6 +41,7 @@ export const config = {
 
 const app = new Hono().basePath("/api");
 app.use("*", cors());
+// app.use(`/docs/*`, serveStatic({root: 'docs'}));
 
 
 app.get("/gameplan", async (c) => {
@@ -529,7 +531,7 @@ app.get("/next-game/test", async (c) => {
             name: "SH Werdau",
             href: "/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/courtInfo?federation=HVS&roundTyp=0&championship=Region+S%C3%BCdwestsachsen+24%2F25&location=22634"
         },
-        nr: "1",
+        nr: "12345",
         home_team: "Sachsen 90 Werdau",
         away_team: "Rotation Borstendorf",
         final_result: "",
