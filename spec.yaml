@@ -1,0 +1,219 @@
+openapi: 3.0.3
+info:
+  title: Handball API
+  version: 1.0.0
+servers:
+  - url: https://nu-liga-api.vercel.app/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+paths:
+  /gameplan:
+    get:
+      summary: Retrieve scheduled matches
+      parameters:
+        - name: championship
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: group
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: teamtable
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: pageState
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Defaults to \`vorrunde\`.
+      responses:
+        '200':
+          description: Successful response
+        '400':
+          description: Missing or invalid parameters
+        '500':
+          description: Error fetching data
+
+  /table:
+    get:
+      summary: Retrieve ranking table
+      parameters:
+        - name: championship
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: group
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+        '400':
+          description: Missing or invalid parameters
+        '500':
+          description: Error fetching data
+
+  /score/all:
+    get:
+      summary: Get current matches
+      parameters:
+        - name: group
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+        '400':
+          description: Missing or invalid parameters
+        '500':
+          description: Error fetching data
+
+  /score/recent:
+    get:
+      summary: Get the most recent/ongoing match for a team
+      parameters:
+        - name: team
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: group
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+        '400':
+          description: Missing or invalid parameters
+        '404':
+          description: No match found
+        '500':
+          description: Error fetching data
+
+  /next-game:
+    get:
+      summary: Retrieve the next scheduled or live match or the last one if no future match is scheduled.
+      parameters:
+        - name: team
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: group
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: championship
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: teamtable
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: pageState
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Defaults to \`vorrunde\`.
+      responses:
+        '200':
+          description: Either the last game (up to 2 Days) or the next game. If there is no next game, the last game is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  day:
+                    type: string
+                    description: The day of the week
+                  date:
+                    type: string
+                    description: The date of the match. DD.MM.YYYY
+                  time:
+                    type: string
+                    description: The time of the match. HH:MM
+                  arena:
+                    type: object
+                    properties:
+                      nr:
+                        type: string
+                        description: ID of the arena
+                      name:
+                        type: string
+                        description: Name of the arena
+                      href:
+                        type: string
+                        description: URL to the arena details
+                  nr:
+                    type: string
+                    description: match ID
+                  home_team:
+                    type: string
+                    description: Name of the home team
+                  away_team:
+                    type: string
+                    description: Name of the away team
+                  final_result:
+                    type: string
+                    description: Final result of the match. Empty if game did not start yet. "0:0" if game configuration started.
+                  live:
+                    type: boolean?
+                    description: True if the match is currently live
+                  current_result:
+                    type: string?
+                    description: current live result of the match.
+                  halftime_result:
+                    type: string?
+                    description: the result at halftime
+                  match_link:
+                    type: string?
+                    description: Nu Score Live link to the match
+                  home_team_logo:
+                    type: string?
+                    description: Link to the home team logo from Nu Liga
+                  away_team_logo:
+                    type: string?
+                    description: Link to the away team logo from Nu Liga
+              example:
+                day: "Sa."
+                date: "29.01.2025"
+                time: "20:00"
+                arena:
+                  nr: "12345"
+                  name: "SH Sachsen"
+                  href: "/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/courtInfo..."
+                nr: "1"
+                home_team: "Home Team"
+                away_team: "guest Team"
+                final_result: ""
+                live: true
+                current_result: "22 - 21"
+                halftime_result: "15 - 14"
+                match_link: "https://hbde-live.liga.nu/nuScoreLive/#/groups/..."
+                home_team_logo: "https://hbde-live.liga.nu/nuScoreLiveRestBackend/..."
+                away_team_logo: "https://hbde-live.liga.nu/nuScoreLiveRestBackend/..."
+        '400':
+          description: Missing or invalid parameters
+        '404':
+          description: No match found
+        '500':
+          description: Error fetching data

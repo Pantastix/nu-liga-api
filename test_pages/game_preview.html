@@ -19,7 +19,7 @@
         }
 
 
-        .loading_live {
+        .loading {
             font-size: 20px;
             font-weight: bold;
             color: #555;
@@ -54,7 +54,7 @@
             vertical-align: top;
         }
 
-        .content-countdown {
+        .match-countdown {
             display: none;
             clear: both;
             font-size: 50px; /* Larger font size */
@@ -65,7 +65,7 @@
             letter-spacing: 2px;
         }
 
-        .date-time {
+        .date-box {
             border-radius: 8px;
             background-color: #E2001D;
             padding: 4px;
@@ -96,7 +96,7 @@
             margin-bottom: 40px;
         }
 
-        .content-bottom {
+        .match-content {
             display: none;
             justify-content: space-between;
             align-items: center;
@@ -142,7 +142,7 @@
             margin-top: 5px;
         }
 
-        .headline {
+        .header {
             display: none;
             text-align: center;
             font-size: 35px;
@@ -153,7 +153,7 @@
         }
 
         @media (min-width: 651px) {
-            .content-bottom {
+            .match-content {
                 flex-direction: row;
             }
 
@@ -176,7 +176,7 @@
                 display: none;
             }
 
-            .headline {
+            .header {
                 font-size: 40px;
             }
         }
@@ -189,7 +189,7 @@
             clear: both;
         }
 
-        hr.announcement-divider {
+        hr.custom-divider {
             display: block;
             clear: both;
             width: 98%;
@@ -201,7 +201,7 @@
         }
 
 
-        .content-arena {
+        .arena {
             display: none;
             clear: both;
             text-align: left;
@@ -219,32 +219,32 @@
 <div class="simulation-info" id="simulation-info" style="display: none;"></div>
 
 <div id="widget" class="match-widget">
-    <div class="loading_live" id="loading">Loading...</div>
-    <div id="content-top" class="live-header" style="display: none;">
+    <div class="loading" id="loading">Loading...</div>
+    <div id="live-header" class="live-header" style="display: none;">
         <div id="live-box" class="live-box">
             <span class="live-icon" style="margin-right: 4px;">⚪</span>LIVE
         </div>
 
-        <div class="date-time">
+        <div class="date-box">
             <span class="material-symbols-outlined">event</span>
-            <span id='date-time-text'></span>
+            <span id='date-box-text'></span>
         </div>
     </div>
-    <div id='content-announcement' class="headline">
+    <div id='header-announcement' class="header">
         <p>Spielankündigung
             <wbr>
             {Datum} {Uhrzeit} Uhr
         </p>
     </div>
-    <div id='content-result' class="headline">
+    <div id='header-result' class="header">
         <p>Ergebnisdienst
             <wbr>
             {Datum} {Uhrzeit} Uhr
         </p>
     </div>
-    <hr class="announcement-divider"/>
-    <div id="content-countdown" class="content-countdown"></div>
-    <div id="content-bottom" class="content-bottom">
+    <hr class="custom-divider"/>
+    <div id="match-countdown" class="match-countdown"></div>
+    <div id="match-content" class="match-content">
         <div class="team home">
             <img id="home-logo" src="" alt="Home Team Logo">
             <div id="home-name"></div>
@@ -256,7 +256,7 @@
             <div id="away-name-small" class="team-name-small"></div>
         </div>
     </div>
-    <div id="content-arena" class="content-arena">
+    <div id="arena" class="arena">
         <svg xmlns="http://www.w3.org/2000/svg" height="29px" viewBox="0 -960 960 960" width="29px" fill="#ffffff"><path d="M138-98v-513.67L480-869l343 257v514H565v-308H395v308H138Z"/></svg>
         <span id="arena-name"></span>
         <svg xmlns="http://www.w3.org/2000/svg" height="15px" viewBox="0 0 24 24" width="15px" fill="#ffffff"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
@@ -324,22 +324,22 @@
         document.getElementById("loading").style.display = "none";
 
         const widget = document.getElementById("widget");
-        const contentAnnouncement = document.getElementById("content-announcement");
-        const contentLive = document.getElementById("content-top");
-        const contentResult = document.getElementById("content-result");
+        const contentAnnouncement = document.getElementById("header-announcement");
+        const contentLive = document.getElementById("live-header");
+        const contentResult = document.getElementById("header-result");
 
         // matchData.final_result = "0:0";
 
         if(matchData.live){
             widget.classList.add("live");
             widget.classList.remove("upcoming");
-            document.getElementById("content-countdown").style.display = "none";
+            document.getElementById("match-countdown").style.display = "none";
             if (matchData.hasOwnProperty('match_link')) {
                 document.getElementById("widget").onclick = function () {
                     window.open(matchData.match_link, "_blank");
                 };
             }
-            const dateTimeElement = document.getElementById("date-time-text");
+            const dateTimeElement = document.getElementById("date-box-text");
             dateTimeElement.textContent = `${matchData.date} ${matchData.time} Uhr`;
 
             contentAnnouncement.style.display = "none";
@@ -348,7 +348,7 @@
         }else if(matchData.final_result !== "" && matchData.final_result !== "0:0") {
             widget.classList.add("live");
             widget.classList.remove("upcoming");
-            document.getElementById("content-countdown").style.display = "none";
+            document.getElementById("match-countdown").style.display = "none";
 
             // Inside updateWidget():
             contentResult.textContent = contentResult.textContent
@@ -383,7 +383,7 @@
         }
 
         // Display the content divs
-        document.getElementById("content-bottom").style.display = "flex";
+        document.getElementById("match-content").style.display = "flex";
 
         // Update team logos and names
         // document.getElementById("home-logo").src = matchData.home_team_logo;
@@ -412,12 +412,12 @@
         if (!matchData.live && (matchData.final_result === "" || matchData.final_result === "0:0") && matchDate > now) {
             console.log("here");
             startCountdown(matchDate);
-            document.getElementById("content-countdown").style.display = "block";
+            document.getElementById("match-countdown").style.display = "block";
         }
 
         // Display the arena
         if (matchData.hasOwnProperty('arena')) {
-            const arenaElement = document.getElementById('content-arena');
+            const arenaElement = document.getElementById('arena');
             const arenaNameElement = document.getElementById('arena-name');
             arenaNameElement.textContent = matchData.arena.name; // Preserves the SVG
             const link = "https://hvs-handball.liga.nu" + matchData.arena.href;
@@ -432,7 +432,7 @@
     }
 
     function startCountdown(matchDate) {
-        const countdownElement = document.getElementById("content-countdown");
+        const countdownElement = document.getElementById("match-countdown");
 
         function updateCountdown() {
             const now = getCurrentTime();
