@@ -2,7 +2,7 @@ import * as cheerio from "cheerio";
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
-import { serveStatic } from '@hono/node-server/serve-static';
+import { serveStatic } from '@hono/node-server/serve-static'
 import { Analytics } from "@vercel/analytics/react"
 
 
@@ -39,12 +39,19 @@ export const config = {
     runtime: "edge",
 };
 
-const app = new Hono().basePath("/api");
-app.use("*", cors());
-// app.use(`/docs/*`, serveStatic({root: 'docs'}));
+const app = new Hono();
+
+// Add CORS headers to all responses
+app.use("/api/*", cors());
+
+app.use("/docs/*", serveStatic({ root: './public/docs' }))
+
+app.get("/docs", (c) => c.redirect("/docs/index.html"));
 
 
-app.get("/gameplan", async (c) => {
+const api = new Hono();
+
+api.get("/gameplan", async (c) => {
     const urlParams = c.req.query();  // Query-Parameter aus der URL lesen
     let championship = urlParams["championship"];
     let group = urlParams["group"];
@@ -84,7 +91,7 @@ app.get("/gameplan", async (c) => {
 });
 
 
-app.get("/table", async (c) => {
+api.get("/table", async (c) => {
     const urlParams = c.req.query();  // Query-Parameter aus der URL lesen
     let championship = urlParams["championship"];
     let group = urlParams["group"];
@@ -143,7 +150,7 @@ app.get("/table", async (c) => {
 });
 
 // API-Endpunkt
-app.get("/score/all", async (c) => {
+api.get("/score/all", async (c) => {
     const urlParams = c.req.query();
     const group = urlParams["group"];
 
@@ -188,7 +195,7 @@ app.get("/score/all", async (c) => {
 
 
 // API-Endpunkt für das neueste Ergebnis eines bestimmten Vereins
-app.get("/score/recent", async (c) => {
+api.get("/score/recent", async (c) => {
     const urlParams = c.req.query();
     let team = urlParams["team"];
     const group = urlParams["group"];
@@ -237,7 +244,7 @@ app.get("/score/recent", async (c) => {
     }
 });
 
-app.get("/score/recent/test", async (c) => {
+api.get("/score/recent/test", async (c) => {
     const urlParams = c.req.query();
     let team = urlParams["team"];
     const group = urlParams["group"];
@@ -300,7 +307,7 @@ app.get("/score/recent/test", async (c) => {
  * @param teamtable: Teamtable
  * @param pageState: PageState?
  */
-app.get("/next-game", async (c) => {
+api.get("/next-game", async (c) => {
     const urlParams = c.req.query();
     let team = urlParams["team"];
     const group = urlParams["group"];
@@ -468,7 +475,7 @@ app.get("/next-game", async (c) => {
     return c.json(response);
 });
 
-app.get("/next-game/test", async (c) => {
+api.get("/next-game/test", async (c) => {
     const urlParams = c.req.query();
     let team = urlParams["team"];
     const group = urlParams["group"];
@@ -496,6 +503,7 @@ app.get("/next-game/test", async (c) => {
         );
     }
 
+    console.log("Test")
 
     //set day of 2nd game to today
     // let today = new Date();
@@ -785,5 +793,7 @@ function calculateTimestamp() {
 
     return timestamp;
 }
+
+app.route("/api", api);
 
 export default handle(app);

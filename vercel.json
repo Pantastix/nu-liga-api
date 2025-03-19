@@ -3,6 +3,18 @@
     {
       "source": "/api/(.*)",
       "destination": "/api"
+    },
+    {
+      "source": "/docs",
+      "destination": "/docs/index.html"
+    },
+    {
+      "source": "/docs/(.*)",
+      "destination": "/public/docs/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.js"
     }
   ]
 }
