@@ -14,7 +14,7 @@
             <noindex-content>true</noindex-content>
         </variables>
     </build-profile>
-    <build-profile instance="ar">
+    <build-profile instance="documentation">
         <variables>
             <noindex-content>true</noindex-content>
         </variables>
