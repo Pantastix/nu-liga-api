@@ -1,20 +1,19 @@
 {
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
-    },
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "rewrites": [
     {
       "source": "/docs",
       "destination": "/docs/index.html"
     },
     {
       "source": "/docs/(.*)",
-      "destination": "/public/docs/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.js"
+      "destination": "/docs/$1"
     }
-  ]
+  ],
+  "public": "./public"
 }

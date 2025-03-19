@@ -2,8 +2,8 @@ import * as cheerio from "cheerio";
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
-import { serveStatic } from '@hono/serve-static'
-import { Analytics } from "@vercel/analytics/react"
+// import { serveStatic } from '@hono/serve-static'
+// import { Analytics } from "@vercel/analytics/react"
 
 
 interface Meeting {
@@ -44,9 +44,9 @@ const app = new Hono();
 // Add CORS headers to all responses
 app.use("/api/*", cors());
 
-app.use("/docs/*", serveStatic({ root: './public/docs' }))
+// app.use("/docs/*", serveStatic({ root: './public/docs' }))
 
-app.get("/docs", (c) => c.redirect("/docs/index.html"));
+// app.get("/docs", (c) => c.redirect("/docs/index.html"));
 
 
 const api = new Hono();
