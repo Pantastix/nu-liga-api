@@ -2,7 +2,7 @@ import * as cheerio from "cheerio";
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
-import { serveStatic } from '@hono/node-server/serve-static'
+import { serveStatic } from '@hono/serve-static'
 import { Analytics } from "@vercel/analytics/react"
 
 
