@@ -42,7 +42,7 @@ export const config = {
 const app = new Hono();
 
 // Add CORS headers to all responses
-app.use("/api/*", cors());
+app.use("*", cors());
 
 // app.use("/docs/*", serveStatic({ root: './public/docs' }))
 

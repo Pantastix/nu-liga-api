@@ -52,7 +52,10 @@
         "teamtable": "1981521"
     });
 
-    fetch(`http://localhost:3000/api/gameplan?${params.toString()}`)
+    const url = "https://nu-liga-api-git-next-game-pantastixs-projects.vercel.app/api/gameplan?championship=Region%20S%C3%BCdwestsachsen%2024/25&group=367458&teamtable=1981528"
+    //const url = "http://localhost:3000/api/gameplan?${params.toString()}"
+
+    fetch(url)
         .then((res) => res.json())
         .then((data) => {
             try {
