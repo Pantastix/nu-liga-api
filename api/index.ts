@@ -38,7 +38,8 @@ export const config = {
     runtime: "edge",
 };
 
-const app = new Hono().basePath("/api");
+const app = new Hono()
+    .basePath("/api");
 app.use("*", cors());
 
 // app.get("/docs", (c) => c.redirect("/docs/index.html"));
