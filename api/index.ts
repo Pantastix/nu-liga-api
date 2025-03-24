@@ -505,7 +505,7 @@ app.get("/next-game/test", async (c) => {
     // today.setSeconds(today.getSeconds() + 30);
 
     //custom date
-    let today = new Date(2025, 2, 16, 19, 19, 0);
+    let today = new Date(2025, 2, 21, 13, 31, 0);
 
     let todayStr = today.toLocaleDateString('de-DE', {year: 'numeric', month: '2-digit', day: '2-digit'});
     let timeNowStr = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
@@ -526,7 +526,7 @@ app.get("/next-game/test", async (c) => {
     }
 
     let closestGame = {
-        day: "Sa.",
+        day: "Fr.",
         date: todayStr,
         time: timeNowStr,
         arena: {

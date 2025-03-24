@@ -9,15 +9,5 @@
             <noindex-content>true</noindex-content>
         </variables>
     </build-profile>
-    <build-profile instance="NuLiga API">
-        <variables>
-            <noindex-content>true</noindex-content>
-        </variables>
-    </build-profile>
-    <build-profile instance="documentation">
-        <variables>
-            <noindex-content>true</noindex-content>
-        </variables>
-    </build-profile>
 
 </buildprofiles>
