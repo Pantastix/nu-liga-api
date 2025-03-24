@@ -4,7 +4,7 @@
       "API_Reference2": {
         "id": "API_Reference2",
         "title": "API Endpoints",
-        "url": "docs/api-reference2.html",
+        "url": "api-reference2.html",
         "level": 0,
         "pages": [
           "Retrieve_the_next_scheduled_or_live_match_or_the_last_one_if_no_future_match_is_scheduled_",
