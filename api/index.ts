@@ -3,7 +3,7 @@ import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
 import moment from 'moment-timezone';
-// import { Analytics } from "@vercel/analytics/react"
+import { Analytics } from "@vercel/analytics/react"
 
 
 interface Meeting {
