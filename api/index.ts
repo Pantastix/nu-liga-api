@@ -400,7 +400,6 @@ app.get("/next-game", async (c) => {
                     (meeting.home_team === team || meeting.away_team === team)
                 );
 
-
                 //check for game with same date as closestGame
                 // const liveGame = relevantGames.find(game => game.date === closestGame.date);
 
@@ -420,6 +419,8 @@ app.get("/next-game", async (c) => {
                         away_team_logo: liveGame.away_team_logo
                     }
                     console.log(liveAttributes);
+                }else{
+                    throw new Error(`No live game found ${relevantGames}`);
                 }
 
             } catch (error: unknown) {
