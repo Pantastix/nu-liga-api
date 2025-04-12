@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
+import moment from 'moment-timezone';
 // import { Analytics } from "@vercel/analytics/react"
 
 
@@ -265,7 +266,7 @@ app.get("/score/recent/test", async (c) => {
     }
 
     //aktuelles datum + 30 sekunden
-    let test_date = new Date();
+    let test_date = getBerlinDate()
     console.log("Aktuelles Datum:", test_date);
     test_date.setSeconds(test_date.getSeconds() + 30);
     console.log("Testdatum:", test_date);
@@ -371,7 +372,7 @@ app.get("/next-game", async (c) => {
     });
 
     //set day of 2nd game to today
-    let today = new Date();
+    let today = getBerlinDate()
 
     let closestGame = getClosestGame(tableRows);
     let liveAttributes = {};
@@ -382,8 +383,8 @@ app.get("/next-game", async (c) => {
 
     if(closestGame){
         let resp = {
-            date: new Date().toLocaleDateString('de-DE'),
-            time: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}),
+            date: getBerlinDate().toLocaleDateString('de-DE'),
+            time: getBerlinDate().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}),
             live: isGameLive(closestGame),
         }
 
@@ -796,6 +797,13 @@ function calculateTimestamp() {
     }
 
     return timestamp;
+}
+
+function getBerlinDate(): Date {
+    // Parse the input date/time in Europe/Berlin
+    const berlinMoment = moment.tz("Europe/Berlin");
+    // Return the corresponding JS Date object
+    return berlinMoment.toDate();
 }
 
 export default handle(app);
