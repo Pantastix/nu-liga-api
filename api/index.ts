@@ -379,8 +379,15 @@ app.get("/next-game", async (c) => {
 
     //if game is live check for live data
     //if game doesn't exist search for next game
+
     if(closestGame){
-        throw new Error(`Test ${new Date().toLocaleTimeString('de-DE')}`);
+        let resp = {
+            date: new Date().toLocaleDateString('de-DE'),
+            time: new Date().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}),
+            live: isGameLive(closestGame),
+        }
+
+        return c.json(resp)
     }
 
     if (closestGame) {
