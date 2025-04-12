@@ -802,6 +802,7 @@ function calculateTimestamp() {
 function getBerlinDate(): Date {
     // Parse the input date/time in Europe/Berlin
     const berlinMoment = moment.tz(moment() ,"Europe/Berlin");
+    berlinMoment.add(2, 'hours');
 
     // Return the corresponding JS Date object
     return berlinMoment.toDate();
