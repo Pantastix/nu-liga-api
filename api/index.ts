@@ -379,6 +379,10 @@ app.get("/next-game", async (c) => {
 
     //if game is live check for live data
     //if game doesn't exist search for next game
+    if(closestGame){
+        throw new Error(`Test ${new Date().toLocaleTimeString('de-DE')}`);
+    }
+
     if (closestGame) {
         if (isGameLive(closestGame)) {
             let timestamp = calculateTimestamp();
@@ -419,8 +423,6 @@ app.get("/next-game", async (c) => {
                         away_team_logo: liveGame.away_team_logo
                     }
                     console.log(liveAttributes);
-                }else{
-                    throw new Error(`No live game found ${relevantGames}`);
                 }
 
             } catch (error: unknown) {
