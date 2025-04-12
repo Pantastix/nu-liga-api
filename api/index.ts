@@ -381,16 +381,6 @@ app.get("/next-game", async (c) => {
     //if game is live check for live data
     //if game doesn't exist search for next game
 
-    if(closestGame){
-        let resp = {
-            date: getBerlinDate().toLocaleDateString('de-DE'),
-            time: getBerlinDate().toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'}),
-            live: isGameLive(closestGame),
-        }
-
-        return c.json(resp)
-    }
-
     if (closestGame) {
         if (isGameLive(closestGame)) {
             let timestamp = calculateTimestamp();
@@ -522,7 +512,7 @@ app.get("/next-game/test", async (c) => {
     let timeNowStr = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
 
     let live = false;
-    if (today < new Date()) {
+    if (today < getBerlinDate()) {
         live = true;
     }
 
@@ -564,7 +554,7 @@ app.get("/next-game/test", async (c) => {
 
 function getClosestGame(tableRows: any[]) {
     for (let i = 0; i < 2; i++) {
-        let checkDate = new Date();
+        let checkDate = getBerlinDate();
         checkDate.setDate(checkDate.getDate() - i);
 
         let closestGame = tableRows.find((game) => {
@@ -583,7 +573,7 @@ function getClosestGame(tableRows: any[]) {
 
 function isGameLive(game: any) {
     //check if date is today and time is after now
-    let now = new Date();
+    let now = getBerlinDate();
     //add 10min
     now.setMinutes(now.getMinutes() + 10);
     let gameDate = formatDate(game.date, game.time);
@@ -726,7 +716,7 @@ function parseMeetingsFromHtml(htmlString: string) {
 
 // Hilfsfunktion, die das neueste Spiel für das Team zurückgibt
 function getLatestGame(meetings: ParsedGame[], team: string): ParsedGame | null {
-    const now = new Date();
+    const now = getBerlinDate();
     const today = now.toISOString().split("T")[0]; // Format: 'YYYY-MM-DD'
     const yesterday = new Date(now);
     yesterday.setDate(now.getDate() - 1);
