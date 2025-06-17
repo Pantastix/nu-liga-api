@@ -37,7 +37,7 @@
             font-size: 18px;
         }
 
-        .game-card .result {
+        .game-card .svs-match-result {
             font-weight: bold;
             color: green;
         }
@@ -57,7 +57,7 @@
             font-size: 18px;
         }
 
-        .loading {
+        .svs-match-loading {
             color: #007bff;
             font-size: 18px;
         }
@@ -105,7 +105,7 @@
                     <h2>${game.home_team} vs ${game.away_team}</h2>
                     <p><strong>Datum:</strong> ${game.date}</p>
                     <p><strong>Startzeit:</strong> ${game.start_time}</p>
-                    <p><strong>Ergebnis:</strong> <span class="result">${game.current_result}</span></p>
+                    <p><strong>Ergebnis:</strong> <span class="svs-match-result">${game.current_result}</span></p>
                     <p><strong>Halbzeit:</strong> <span class="half-time">${game.halftime_result}</span></p>
                     <p><a href="${game.match_link}" class="match-link" target="_blank">Spiel ansehen</a></p>
                 `;

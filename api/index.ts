@@ -2,7 +2,8 @@ import * as cheerio from "cheerio";
 import {Hono} from "hono";
 import {cors} from "hono/cors";
 import {handle} from "hono/vercel";
-// import { Analytics } from "@vercel/analytics/react"
+import moment from 'moment-timezone';
+import { Analytics } from "@vercel/analytics/react"
 
 
 interface Meeting {
@@ -265,7 +266,7 @@ app.get("/score/recent/test", async (c) => {
     }
 
     //aktuelles datum + 30 sekunden
-    let test_date = new Date();
+    let test_date = getBerlinDate()
     console.log("Aktuelles Datum:", test_date);
     test_date.setSeconds(test_date.getSeconds() + 30);
     console.log("Testdatum:", test_date);
@@ -371,7 +372,7 @@ app.get("/next-game", async (c) => {
     });
 
     //set day of 2nd game to today
-    let today = new Date();
+    let today = getBerlinDate()
 
     console.log(tableRows)
 
@@ -382,6 +383,7 @@ app.get("/next-game", async (c) => {
 
     //if game is live check for live data
     //if game doesn't exist search for next game
+
     if (closestGame) {
         if (isGameLive(closestGame)) {
             let timestamp = calculateTimestamp();
@@ -402,7 +404,6 @@ app.get("/next-game", async (c) => {
                 const relevantGames = games.filter(meeting =>
                     (meeting.home_team === team || meeting.away_team === team)
                 );
-
 
                 //check for game with same date as closestGame
                 // const liveGame = relevantGames.find(game => game.date === closestGame.date);
@@ -517,13 +518,13 @@ app.get("/next-game/test", async (c) => {
     // today.setSeconds(today.getSeconds() + 30);
 
     //custom date
-    let today = new Date(2025, 2, 21, 13, 31, 0);
+    let today = new Date(2025, 3, 12, 15, 26, 0);
 
     let todayStr = today.toLocaleDateString('de-DE', {year: 'numeric', month: '2-digit', day: '2-digit'});
     let timeNowStr = today.toLocaleTimeString('de-DE', {hour: '2-digit', minute: '2-digit'});
 
     let live = false;
-    if (today < new Date()) {
+    if (today < getBerlinDate()) {
         live = true;
     }
 
@@ -565,7 +566,7 @@ app.get("/next-game/test", async (c) => {
 
 function getClosestGame(tableRows: any[]) {
     for (let i = 0; i < 2; i++) {
-        let checkDate = new Date();
+        let checkDate = getBerlinDate();
         checkDate.setDate(checkDate.getDate() - i);
 
         let closestGame = tableRows.find((game) => {
@@ -584,7 +585,7 @@ function getClosestGame(tableRows: any[]) {
 
 function isGameLive(game: any) {
     //check if date is today and time is after now
-    let now = new Date();
+    let now = getBerlinDate();
     //add 10min
     now.setMinutes(now.getMinutes() + 10);
     let gameDate = formatDate(game.date, game.time);
@@ -727,7 +728,7 @@ function parseMeetingsFromHtml(htmlString: string) {
 
 // Hilfsfunktion, die das neueste Spiel für das Team zurückgibt
 function getLatestGame(meetings: ParsedGame[], team: string): ParsedGame | null {
-    const now = new Date();
+    const now = getBerlinDate();
     const today = now.toISOString().split("T")[0]; // Format: 'YYYY-MM-DD'
     const yesterday = new Date(now);
     yesterday.setDate(now.getDate() - 1);
@@ -798,6 +799,15 @@ function calculateTimestamp() {
     }
 
     return timestamp;
+}
+
+function getBerlinDate(): Date {
+    // Parse the input date/time in Europe/Berlin
+    const berlinMoment = moment.tz(moment() ,"Europe/Berlin");
+    berlinMoment.add(2, 'hours');
+
+    // Return the corresponding JS Date object
+    return berlinMoment.toDate();
 }
 
 export default handle(app);
