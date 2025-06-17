@@ -371,7 +371,8 @@ app.get("/next-game", async (c) => {
         return r;
     });
 
-    //set day of 2nd game to today
+    console.log(tableRows);
+
     let today = getBerlinDate()
 
     let closestGame = getClosestGame(tableRows);
@@ -439,7 +440,18 @@ app.get("/next-game", async (c) => {
     } else {
         //check if there is a game in the future (get the first one)
         let futureGame = tableRows.find((game) => {
-            return new Date(game.date) > today;
+            if (!game.date || game.date === "Termin offen") {
+                return false;
+            }
+            try {
+                // WICHTIGE KORREKTUR: Verwenden Sie die Hilfsfunktion `formatDate`, um TT.MM.JJJJ-Daten korrekt zu parsen.
+                // Der ursprüngliche Code verwendete `new Date(game.date)`, was bei diesem Format fehlschlägt.
+                const gameDate = formatDate(game.date, undefined);
+                return gameDate >= today;
+            } catch (e) {
+                console.error(`Spiel wird wegen ungültigem Datumsformat übersprungen: ${game.date}`);
+                return false;
+            }
         });
 
         //if no future game, get the last game
@@ -551,6 +563,8 @@ app.get("/next-game/test", async (c) => {
 
     return c.json(response);
 });
+
+
 
 function getClosestGame(tableRows: any[]) {
     for (let i = 0; i < 2; i++) {
