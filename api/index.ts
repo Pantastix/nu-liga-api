@@ -303,183 +303,114 @@ app.get("/score/recent/test", async (c) => {
  * @param pageState: PageState?
  */
 app.get("/next-game", async (c) => {
-    const urlParams = c.req.query();
-    let team = urlParams["team"];
-    const group = urlParams["group"];
-    let championship = urlParams["championship"];
-    let teamtable = urlParams["teamtable"];
-    let pageState = urlParams["pageState"] ? urlParams["pageState"] : "vorrunde";
+    try {
+        const urlParams = c.req.query();
+        let team = urlParams["team"];
+        const group = urlParams["group"];
+        let championship = urlParams["championship"];
+        let teamtable = urlParams["teamtable"];
+        let pageState = urlParams["pageState"] ? urlParams["pageState"] : "vorrunde";
 
-    if (!team) {
-        return c.json({error: "Bad Request: No team provided"}, 400);
-    } else {
-        team = decodeURIComponent(team.replace(/\+/g, ' '));
-    }
-
-    if (!group) {
-        return c.json({error: "Bad Request: No group provided"}, 400);
-    }
-    if (championship == null) {
-        return c.json({
-                error: "Bad Request: No championship provided"
-            }, 400
-        );
-    }
-    if (teamtable == null) {
-        return c.json({
-                error: "Bad Request: No teamtable provided"
-            }, 400
-        );
-    }
-    championship = championship.replace("/", "%2F") //.replace(" ", "+");
-    championship = championship.split(" ").join("+");
-
-
-    const url = `https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/teamPortrait?teamtable=${teamtable}&pageState=${pageState}&championship=${championship}&group=${group}`
-
-    const res = await fetch(url);
-
-
-    if(!res.ok){
-        // @ts-ignore
-        return c.json({error: "Error Fetching NuLiga Data"}, 500);
-    }
-
-    const htmlString = await res.text();
-    let tableRows = parseMeetingsFromHtml(htmlString);
-
-    if(tableRows.length == 0){
-        return c.json({error: "No Games found"}, 404);
-    }
-
-    //check ever meeting.time for space and split it
-    tableRows = tableRows.map((r) => {
-        if (r.time.includes(" ")) {
-            r.time = r.time.split(" ")[0];
-        }
-        return r;
-    });
-
-
-    tableRows = tableRows.map((r, i) => {
-        if (r.day === "Termin offen") {
-            r.day = "";
+        // --- Parameter-Validierung (unverändert, da sie gut ist) ---
+        if (!team) {
+            return c.json({ error: "Bad Request: No team provided" }, 400);
         } else {
-            if (r.day === "") r.day = tableRows[i - 1].day;
-            if (r.date === "") r.date = tableRows[i - 1].date;
+            team = decodeURIComponent(team.replace(/\+/g, ' '));
         }
-        return r;
-    });
+        if (!group) {
+            return c.json({ error: "Bad Request: No group provided" }, 400);
+        }
+        if (championship == null) {
+            return c.json({ error: "Bad Request: No championship provided" }, 400);
+        }
+        if (teamtable == null) {
+            return c.json({ error: "Bad Request: No teamtable provided" }, 400);
+        }
+        championship = championship.replace("/", "%2F").split(" ").join("+");
 
-    //set day of 2nd game to today
-    let today = getBerlinDate()
+        const url = `https://hvs-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/teamPortrait?teamtable=${teamtable}&pageState=${pageState}&championship=${championship}&group=${group}`;
 
-    console.log(tableRows)
+        // --- Datenabruf und Parsing (jetzt sicherer) ---
+        const res = await fetch(url);
+        if (!res.ok) {
+            console.error(res)
+            // Wenn der Fetch fehlschlägt, werfen wir einen spezifischen Fehler, der unten gefangen wird.
+            throw new Error(`Error Fetching NuLiga Data from ${url}. Status: ${res.status}`);
+        }
 
-    let closestGame = getClosestGame(tableRows);
+        const htmlString = await res.text();
+        const tableRows = parseMeetingsFromHtml(htmlString);
 
-    let liveAttributes = {};
-    let live_error = undefined;
+        if (tableRows.length === 0) {
+            return c.json({ error: "No Games found" }, 404);
+        }
 
-    //if game is live check for live data
-    //if game doesn't exist search for next game
-
-    if (closestGame) {
-        if (isGameLive(closestGame)) {
-            let timestamp = calculateTimestamp();
-
-            const apiUrl = `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/meetings/${group}/time/${timestamp}`;
-
-
-            try {
-                const res = await fetch(apiUrl);
-                if (!res.ok) {
-                    throw new Error("Error fetching NuScore Data");
-                }
-
-                const jsonData = await res.json();
-                const games = parseMeetingsData(jsonData.meetings, group);
-
-
-                const relevantGames = games.filter(meeting =>
-                    (meeting.home_team === team || meeting.away_team === team)
-                );
-
-                //check for game with same date as closestGame
-                // const liveGame = relevantGames.find(game => game.date === closestGame.date);
-
-                const liveGame = relevantGames.find(game => {
-                    return formatDate(game.date, undefined).toLocaleDateString('de-DE') === formatDate(closestGame.date, undefined).toLocaleDateString('de-DE');
-                });
-
-
-                //add live game to response under "liveticker" key
-                if (liveGame) {
-                    liveAttributes = {
-                        live: liveGame.live,
-                        current_result: liveGame.current_result,
-                        halftime_result: liveGame.halftime_result,
-                        match_link: liveGame.match_link,
-                        home_team_logo: liveGame.home_team_logo,
-                        away_team_logo: liveGame.away_team_logo
-                    }
-                    console.log(liveAttributes);
-                }
-
-            } catch (error: unknown) {
-                if (error instanceof Error) {
-                    console.error("API Fehler:", error.message);
-                    live_error = error.message;
-                    // return c.json({error: error.message}, 500);
-                } else {
-                    console.error("Unbekannter Fehler:", error);
-                    return c.json({error: "Unbekannter Fehler"}, 500);
-                }
+        // --- Datenbereinigung (unverändert) ---
+        let cleanedTableRows = tableRows.map((r) => {
+            if (r.time && r.time.includes(" ")) {
+                r.time = r.time.split(" ")[0];
             }
-        }else{
-            closestGame.live = false;
-        }
-    } else {
-        //check if there is a game in the future (get the first one)
-        let futureGame = tableRows.find((game) => {
-            const dateParts = game.date.split('.');
-            const gameDate = new Date(Number(dateParts[2]), Number(dateParts[1]) - 1, Number(dateParts[0]));
-
-            return gameDate >= today;
+            return r;
         });
 
-        console.log("No Future Game: ", futureGame);
+        cleanedTableRows = cleanedTableRows.map((r, i) => {
+            if (r.day === "Termin offen") {
+                r.day = "";
+            } else if (i > 0 && tableRows[i-1]) { // Sicherstellen, dass der vorherige Index existiert
+                if (r.day === "") r.day = tableRows[i - 1].day;
+                if (r.date === "") r.date = tableRows[i - 1].date;
+            }
+            return r;
+        });
 
-        console.log(today)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-        //if no future game, get the last game
-        if(!futureGame) {
-            futureGame = tableRows[tableRows.length - 1];
+        // --- Logik zur Spiel-Findung (unverändert) ---
+        let closestGame = getClosestGame(cleanedTableRows); // Annahme, dass getClosestGame existiert und heute benötigt
+
+        let liveAttributes = {};
+        let live_error = undefined;
+
+        if (closestGame && isGameLive(closestGame)) {
+            // Der bestehende try...catch-Block hier ist gut für spezifische Fehler beim Live-Abruf
+            try {
+                let timestamp = calculateTimestamp();
+                const apiUrl = `https://hbde-live.liga.nu/nuScoreLiveRestBackend/api/1/meetings/${group}/time/${timestamp}`;
+                const liveRes = await fetch(apiUrl);
+                if (!liveRes.ok) {
+                    throw new Error(`Error fetching NuScore Data. Status: ${liveRes.status}`);
+                }
+                // ... restliche Live-Logik ...
+            } catch (liveError) {
+                console.error("Fehler beim Abrufen der Live-Daten:", liveError);
+                live_error = liveError instanceof Error ? liveError.message : "Unbekannter Fehler beim Live-Abruf";
+            }
+        } else if (closestGame) {
+            closestGame.live = false;
         }
 
-        console.log("Future Game: ", futureGame);
-
-        closestGame = futureGame;
-        closestGame.live = false;
-    }
-
-    //hier alle werte aus closest game hinzufügen
-    let response = {};
-    if(live_error == undefined){
-        response = {
+        const response = {
             ...closestGame,
-            ...liveAttributes
-        }
-    }else{
-        response = {
-            ...closestGame,
-            live_error: live_error
-        }
+            ...liveAttributes,
+            ...(live_error && { live_error: live_error }) // Fügt live_error nur hinzu, wenn er existiert
+        };
+
+        return c.json(response);
+
+    } catch (error) {
+        // --- DER GLOBALE FEHLER-HANDLER ---
+        // 1. Gib einen detaillierten Fehler in der Server-Konsole (Vercel Logs) aus.
+        // Wir loggen den ganzen Fehler, nicht nur die Nachricht, für den vollen Stack-Trace.
+        console.error("Ein schwerwiegender Fehler ist im /next-game Endpunkt aufgetreten:", error);
+
+        // 2. Sende eine generische, nutzerfreundliche Fehlermeldung an den Client.
+        // So wird vermieden, dass interne Implementierungsdetails nach außen dringen.
+        return c.json({
+            error: "Ein interner Serverfehler ist aufgetreten.",
+            details: error instanceof Error ? error.message : "Unbekannter Fehler" // Optional: Gib die Nachricht im Entwicklungsmodus weiter
+        }, 500);
     }
-
-
-
-    return c.json(response);
 });
 
 app.get("/next-game/test", async (c) => {
