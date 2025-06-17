@@ -373,7 +373,10 @@ app.get("/next-game", async (c) => {
     //set day of 2nd game to today
     let today = new Date();
 
+    console.log(tableRows)
+
     let closestGame = getClosestGame(tableRows);
+
     let liveAttributes = {};
     let live_error = undefined;
 
@@ -438,13 +441,22 @@ app.get("/next-game", async (c) => {
     } else {
         //check if there is a game in the future (get the first one)
         let futureGame = tableRows.find((game) => {
-            return new Date(game.date) > today;
+            const dateParts = game.date.split('.');
+            const gameDate = new Date(Number(dateParts[2]), Number(dateParts[1]) - 1, Number(dateParts[0]));
+
+            return gameDate >= today;
         });
+
+        console.log("No Future Game: ", futureGame);
+
+        console.log(today)
 
         //if no future game, get the last game
         if(!futureGame) {
             futureGame = tableRows[tableRows.length - 1];
         }
+
+        console.log("Future Game: ", futureGame);
 
         closestGame = futureGame;
         closestGame.live = false;
