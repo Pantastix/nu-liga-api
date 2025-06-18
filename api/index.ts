@@ -801,12 +801,9 @@ function calculateTimestamp() {
 }
 
 function getBerlinDate(): Date {
-    // Parse the input date/time in Europe/Berlin
-    const berlinMoment = moment.tz(moment() ,"Europe/Berlin");
-    berlinMoment.add(2, 'hours');
-
-    // Return the corresponding JS Date object
-    return berlinMoment.toDate();
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    return new Date(utc + (3600000 * 2)); // Berlin = UTC+2
 }
 
 export default handle(app);
