@@ -371,8 +371,6 @@ app.get("/next-game", async (c) => {
         return r;
     });
 
-    console.log(tableRows);
-
     let today = getBerlinDate()
 
     let closestGame = getClosestGame(tableRows);
@@ -381,7 +379,6 @@ app.get("/next-game", async (c) => {
 
     //if game is live check for live data
     //if game doesn't exist search for next game
-
     if (closestGame) {
         if (isGameLive(closestGame)) {
             let timestamp = calculateTimestamp();
